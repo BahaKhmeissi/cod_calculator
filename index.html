@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cash on Delivery Calculator</title>
     <style>
       body {
@@ -59,6 +60,27 @@
       .results p {
         margin: 5px 0;
       }
+
+      /* Responsive tweaks */
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        .calculator {
+          padding: 15px;
+        }
+        h2 {
+          font-size: 1.4rem;
+        }
+        input,
+        button {
+          font-size: 14px;
+          padding: 8px;
+        }
+        .results p {
+          font-size: 14px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -93,7 +115,6 @@
 
     <script>
       function calculate() {
-        // Get inputs
         const totalOrders = parseFloat(
           document.getElementById("totalOrders").value
         );
@@ -126,35 +147,27 @@
           return;
         }
 
-        // Step 1: Confirmed orders
         const confirmedOrders = totalOrders * confirmationRate;
-
-        // Step 2: Delivered items (delivery rate proportional to confirmation rate)
         const deliveredOrders = confirmedOrders * deliveryRate;
-
-        // Step 3: Costs
         const facebookCost = totalOrders * cpl;
         const inventoryCost = deliveredOrders * inventoryPrice;
         const totalDeliveryCost = deliveredOrders * deliveryCost;
-
-        // Step 4: Revenue & Profit
         const totalRevenue = deliveredOrders * sellingPrice;
         const totalCost = facebookCost + inventoryCost + totalDeliveryCost;
         const profit = totalRevenue - totalCost;
 
-        // Step 5: Display results
         document.getElementById("results").innerHTML = `
-        <p><strong>Confirmed Orders:</strong> ${confirmedOrders.toFixed(2)}</p>
-        <p><strong>Delivered Orders:</strong> ${deliveredOrders.toFixed(2)}</p>
-        <p><strong>Facebook Ads Cost:</strong> $${facebookCost.toFixed(2)}</p>
-        <p><strong>Inventory Cost:</strong> $${inventoryCost.toFixed(2)}</p>
-        <p><strong>Delivery Cost:</strong> $${totalDeliveryCost.toFixed(2)}</p>
-        <p><strong>Total Revenue:</strong> $${totalRevenue.toFixed(2)}</p>
-        <p><strong>Total Cost:</strong> $${totalCost.toFixed(2)}</p>
-        <p><strong style="color:${
-          profit >= 0 ? "green" : "red"
-        }">Profit:</strong> $${profit.toFixed(2)}</p>
-    `;
+    <p><strong>Confirmed Orders:</strong> ${confirmedOrders.toFixed(2)}</p>
+    <p><strong>Delivered Orders:</strong> ${deliveredOrders.toFixed(2)}</p>
+    <p><strong>Facebook Ads Cost:</strong> $${facebookCost.toFixed(2)}</p>
+    <p><strong>Inventory Cost:</strong> $${inventoryCost.toFixed(2)}</p>
+    <p><strong>Delivery Cost:</strong> $${totalDeliveryCost.toFixed(2)}</p>
+    <p><strong>Total Revenue:</strong> $${totalRevenue.toFixed(2)}</p>
+    <p><strong>Total Cost:</strong> $${totalCost.toFixed(2)}</p>
+    <p><strong style="color:${
+      profit >= 0 ? "green" : "red"
+    }">Profit:</strong> $${profit.toFixed(2)}</p>
+  `;
       }
     </script>
   </body>
