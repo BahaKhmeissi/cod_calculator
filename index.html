@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cash on Delivery Calculator</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+      }
+      .calculator {
+        background: #fff;
+        padding: 20px;
+        max-width: 500px;
+        width: 100%;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        margin-top: 20px;
+        width: 100%;
+        padding: 10px;
+        border: none;
+        background: #28a745;
+        color: white;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #218838;
+      }
+      .results {
+        margin-top: 20px;
+        background: #f9f9f9;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+      }
+      .results p {
+        margin: 5px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="calculator">
+      <h2>COD Profit Calculator</h2>
+
+      <label>Total Number of Orders</label>
+      <input type="number" id="totalOrders" />
+
+      <label>Confirmation Rate (%)</label>
+      <input type="number" id="confirmationRate" />
+
+      <label>Delivery Rate (%)</label>
+      <input type="number" id="deliveryRate" />
+
+      <label>Facebook Cost Per Lead ($)</label>
+      <input type="number" id="cpl" step="0.01" />
+
+      <label>Product Inventory Price ($) (gross sale + weight) Per Item</label>
+      <input type="number" id="inventoryPrice" step="0.01" />
+
+      <label>Selling Price ($)</label>
+      <input type="number" id="sellingPrice" step="0.01" />
+
+      <label>Delivered Order Cost ($)</label>
+      <input type="number" id="deliveryCost" step="0.01" />
+
+      <button onclick="calculate()">Calculate</button>
+
+      <div class="results" id="results"></div>
+    </div>
+
+    <script>
+      function calculate() {
+        // Get inputs
+        const totalOrders = parseFloat(
+          document.getElementById("totalOrders").value
+        );
+        const confirmationRate =
+          parseFloat(document.getElementById("confirmationRate").value) / 100;
+        const deliveryRate =
+          parseFloat(document.getElementById("deliveryRate").value) / 100;
+        const cpl = parseFloat(document.getElementById("cpl").value);
+        const inventoryPrice = parseFloat(
+          document.getElementById("inventoryPrice").value
+        );
+        const sellingPrice = parseFloat(
+          document.getElementById("sellingPrice").value
+        );
+        const deliveryCost = parseFloat(
+          document.getElementById("deliveryCost").value
+        );
+
+        if (
+          isNaN(totalOrders) ||
+          isNaN(confirmationRate) ||
+          isNaN(deliveryRate) ||
+          isNaN(cpl) ||
+          isNaN(inventoryPrice) ||
+          isNaN(sellingPrice) ||
+          isNaN(deliveryCost)
+        ) {
+          document.getElementById("results").innerHTML =
+            "<p style='color:red;'>Please fill all fields correctly.</p>";
+          return;
+        }
+
+        // Step 1: Confirmed orders
+        const confirmedOrders = totalOrders * confirmationRate;
+
+        // Step 2: Delivered items (delivery rate proportional to confirmation rate)
+        const deliveredOrders = confirmedOrders * deliveryRate;
+
+        // Step 3: Costs
+        const facebookCost = totalOrders * cpl;
+        const inventoryCost = deliveredOrders * inventoryPrice;
+        const totalDeliveryCost = deliveredOrders * deliveryCost;
+
+        // Step 4: Revenue & Profit
+        const totalRevenue = deliveredOrders * sellingPrice;
+        const totalCost = facebookCost + inventoryCost + totalDeliveryCost;
+        const profit = totalRevenue - totalCost;
+
+        // Step 5: Display results
+        document.getElementById("results").innerHTML = `
+        <p><strong>Confirmed Orders:</strong> ${confirmedOrders.toFixed(2)}</p>
+        <p><strong>Delivered Orders:</strong> ${deliveredOrders.toFixed(2)}</p>
+        <p><strong>Facebook Ads Cost:</strong> $${facebookCost.toFixed(2)}</p>
+        <p><strong>Inventory Cost:</strong> $${inventoryCost.toFixed(2)}</p>
+        <p><strong>Delivery Cost:</strong> $${totalDeliveryCost.toFixed(2)}</p>
+        <p><strong>Total Revenue:</strong> $${totalRevenue.toFixed(2)}</p>
+        <p><strong>Total Cost:</strong> $${totalCost.toFixed(2)}</p>
+        <p><strong style="color:${
+          profit >= 0 ? "green" : "red"
+        }">Profit:</strong> $${profit.toFixed(2)}</p>
+    `;
+      }
+    </script>
+  </body>
+</html>
