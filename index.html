@@ -168,7 +168,7 @@
       </div>
       <div class="row">
         <div class="f"><label for="target">Target profit / order</label><div class="unit"><input id="target" type="number" step="any" min="0"><span>$</span></div></div>
-        <div class="f"><label for="budget">Test ad budget</label><div class="unit"><input id="budget" type="number" step="any" min="0"><span>$</span></div></div>
+        <div class="f"><label for="leads">Leads received</label><div class="unit"><input id="leads" type="number" step="1" min="0"><span>leads</span></div><div class="sub" id="leadsHint"></div></div>
       </div>
     </div>
 
@@ -222,7 +222,7 @@
       </div>
       <div class="card">
         <h4>From leads to cash</h4>
-        <div class="seg" id="funnelSeg"><button data-m="100" class="on">Per 100 leads</button><button data-m="budget">For your test budget</button></div>
+        <div class="seg" id="funnelSeg"><button data-m="100" class="on">Per 100 leads</button><button data-m="leads" id="leadsSeg">For your leads</button></div>
         <div class="funnel" id="funnel"></div>
         <div class="tbl"><table id="pnl"></table></div>
       </div>
@@ -300,7 +300,7 @@ const CUR_LABEL = {XAF:"FCFA", XOF:"FCFA", GNF:"GNF", USD:"$"};
 
 const DEFAULTS = {
   country:"CG", pname:"", cost:1.5, weight:100, units:1, extra:0.2, battery:false,
-  price:25, cpl:1.5, cr:55, dr:55, target:4, budget:300,
+  price:25, cpl:1.5, cr:55, dr:55, target:4, leads:200,
   cc:0, codPct:0, lossPct:5, rCFA:600, rGNF:8700, stock:300, overrides:{}, v:3
 };
 const STORE = "codAfricaCalc";
@@ -394,7 +394,7 @@ const TIPS = {
   cr:"Share of received orders confirmed by phone. Your partner's average: 50–55%.",
   dr:"Share of confirmed orders that are delivered and paid. Your partner's average: 50–55%.",
   target:"The profit you want on each delivered order. Used for the recommended price.",
-  budget:"What you plan to spend on ads for a test. Used in \"For your test budget\".",
+  leads:"How many orders (leads) you received or expect from your ads, before confirmation. Used in \"For your leads\" on the Results screen. Ad spend = leads × CPL.",
   fee:"Charged by the fulfilment partner on each delivered order (storage, packing, delivery, cash collection). Returned orders are not charged.",
   shipKg:"Air freight from China to this country, per kg. Multiplied by your product's weight.",
   cc:"Extra cost per lead if you pay a call centre separately. Leave 0 if confirmation is included.",
@@ -413,7 +413,7 @@ const KPI_TIPS = {
 const tipHTML = t => `<span class="tip" tabindex="0" role="button" aria-label="Info" data-tip="${t.replace(/"/g,"&quot;")}">!</span>`;
 
 // ---------- UI wiring ----------
-const FIELDS = ["pname","cost","weight","units","extra","price","cpl","cr","dr","target","budget","cc","codPct","lossPct","rCFA","rGNF","stock"];
+const FIELDS = ["pname","cost","weight","units","extra","price","cpl","cr","dr","target","leads","cc","codPct","lossPct","rCFA","rGNF","stock"];
 
 function initUI(){
   const sel = $("country");
@@ -487,6 +487,8 @@ function render(){
   // hints under inputs
   $("priceHint").textContent = cur==="USD" ? "" : "≈ "+money(m.priceUSD*m.r, cur);
   $("feeHint").textContent = cur==="USD" ? "" : "≈ "+money(m.fee, cur);
+  $("leadsHint").textContent = "ad spend ≈ "+money((+S.leads||0)*(+S.cpl||0));
+  $("leadsSeg").textContent = `For your ${Math.round(+S.leads||0)} leads`;
   $("shipHint").textContent = cur==="USD" || m.ship==null ? "" : "≈ "+money(m.ship, cur);
 
   // top badge
@@ -520,7 +522,7 @@ function render(){
     `<tr class="hl"><td><span class="dot" style="background:#86efac"></span>Profit</td><td class="${cls(m.profit)}">${L(m.profit)}</td><td class="${cls(m.profit)}">${pct(m.margin)}</td></tr>`;
 
   // ---- overview: funnel + P&L
-  const leads = funnelMode==="100" ? 100 : (+S.budget||0)/(+S.cpl||1);
+  const leads = funnelMode==="100" ? 100 : Math.max(0, +S.leads||0);
   const conf = leads*m.cr, del = conf*m.dr, ret = conf-del;
   const fmt = x => x.toFixed(x<10?1:0);
   $("funnel").innerHTML = [[leads,"leads"],[conf,"confirmed"],[del,"delivered"],[ret,"returned"]]
