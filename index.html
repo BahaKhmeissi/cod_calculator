@@ -87,11 +87,11 @@
     </div>
     <div id="countryInfo"></div>
     <div class="row">
-      <div class="f"><label>Fulfilment fee per order</label><div class="unit"><input id="fee" type="number" step="any"><span class="cur"></span></div><div class="hint" id="feeHint"></div></div>
-      <div class="f"><label>Shipping from China (per kg)</label><div class="unit"><input id="shipKg" type="number" step="any"><span class="cur"></span></div><div class="hint" id="shipHint"></div></div>
+      <div class="f"><label>Fulfilment fee per order</label><div class="unit"><input id="fee" type="number" step="any"><span>USD</span></div><div class="hint" id="feeHint"></div></div>
+      <div class="f"><label>Shipping from China (per kg)</label><div class="unit"><input id="shipKg" type="number" step="any"><span>USD</span></div><div class="hint" id="shipHint"></div></div>
     </div>
     <div id="shipWarn"></div>
-    <div class="hint">Defaults come from your partner's price list. Edit them if your rates change: edits are saved for each country.</div>
+    <div class="hint">Defaults come from your partner's price list (in CFA), shown here in USD. Edit them if your rates change: edits are saved for each country.</div>
     <button class="btn ghost" id="resetCountry" style="margin-top:8px">Reset this country's rates</button>
   </div>
 
@@ -314,7 +314,7 @@ const CHECKS = ["battery","feeOnReturns"];
 
 function initUI(){
   const sel = $("country");
-  sel.innerHTML = Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}">${c.flag} ${c.name}</option>`).join("");
+  sel.innerHTML = Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}">${c.name}</option>`).join("");
   sel.value = S.country;
   FIELDS.forEach(f=>{ $(f).value = S[f]; $(f).addEventListener("input", ()=>{ S[f] = $(f).type==="text" ? $(f).value : $(f).value===""? "" : +$(f).value; save(); if(f==="rCFA"||f==="rGNF") syncCountry(); render(); }); });
   CHECKS.forEach(f=>{ $(f).checked = !!S[f]; $(f).addEventListener("change", ()=>{ S[f] = $(f).checked; save(); syncCountry(); render(); }); });
@@ -325,7 +325,7 @@ function initUI(){
   ["fee","shipKg"].forEach(id=>$(id).addEventListener("input", ()=>{
     const o = S.overrides[S.country] = S.overrides[S.country] || {};
     const key = id==="fee" ? "fee" : "ship";
-    if($(id).value===""){ delete o[key]; } else o[key] = +$(id).value;
+    if($(id).value===""){ delete o[key]; } else o[key] = +$(id).value * rateOf(COUNTRIES[S.country].cur);
     save(); render();
   }));
   $("resetCountry").onclick = ()=>{ delete S.overrides[S.country]; save(); syncCountry(); render(); };
@@ -340,7 +340,8 @@ function confirmReset(){ return true; } // no browser dialogs; reset is instant
 function syncCountry(){
   const c = COUNTRIES[S.country], {fee, ship} = countryRates(S.country);
   document.querySelectorAll(".cur").forEach(e=>e.textContent = CUR_LABEL[c.cur]);
-  $("fee").value = fee; $("shipKg").value = ship ?? "";
+  const r = rateOf(c.cur), r2 = x => Math.round(x*100)/100;
+  $("fee").value = r2(fee/r); $("shipKg").value = ship==null ? "" : r2(ship/r);
   $("countryInfo").innerHTML = `<span class="pill">Currency: ${CUR_LABEL[c.cur]}${c.cur!=="USD"?` · 1 USD = ${rateOf(c.cur).toLocaleString("fr-FR")}`:""}</span>`+
     (c.shipBat?`<span class="pill">Battery/liquid: ${c.shipBat.toLocaleString("fr-FR")} /kg</span>`:"");
   $("shipWarn").innerHTML = ship==null ? `<div class="warnbox">⚠️ The price list has no China shipping rate for ${c.name}. Ask your partner and enter it above.</div>` : "";
@@ -360,8 +361,8 @@ function render(){
   const cur = m.c.cur, L = v => M(v, cur);
   // input hints
   $("priceHint").textContent = cur==="USD" ? "" : `≈ ${money(m.priceLocal, cur)}`;
-  $("feeHint").textContent = `≈ ${money(m.feeUSD)}`;
-  $("shipHint").textContent = isFinite(m.shipKgUSD) ? `≈ ${money(m.shipKgUSD)} /kg` : "";
+  $("feeHint").textContent = cur==="USD" ? "" : `≈ ${money(m.fee, cur)}`;
+  $("shipHint").textContent = cur==="USD" || m.ship==null ? "" : `≈ ${money(m.ship, cur)} /kg`;
   const recUSD = Math.ceil(m.recPriceUSD*2)/2;
   // verdict
   const v = $("verdict");
@@ -447,7 +448,7 @@ function render(){
   const cmp = Object.keys(COUNTRIES).map(code=>({code, cc:COUNTRIES[code], x:compute(code, m.priceUSD)}))
     .sort((a,b)=> (isFinite(b.x.profit)?b.x.profit:-1e9) - (isFinite(a.x.profit)?a.x.profit:-1e9));
   $("compare").innerHTML = `<tr><th>Country</th><th>Price</th><th>Fee</th><th>Ship/unit</th><th>Landed/unit</th><th>Profit / delivered</th><th>Profit / 100 leads</th><th>Break-even CPL</th></tr>` +
-    cmp.map(({code,cc,x})=>`<tr class="${code===S.country?"hl":""}"><td>${cc.flag} ${cc.name}</td><td>${M(x.priceUSD,cc.cur)}</td><td>${M(x.feeUSD,cc.cur)}</td><td>${isFinite(x.shipUnit)?money(x.shipUnit):"rate?"}</td><td>${isFinite(x.landedUnit)?money(x.landedUnit):"—"}</td><td class="${cls(x.profit)}">${M(x.profit,cc.cur)}</td><td class="${cls(x.profit)}">${money(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
+    cmp.map(({code,cc,x})=>`<tr class="${code===S.country?"hl":""}"><td>${cc.name}</td><td>${M(x.priceUSD,cc.cur)}</td><td>${M(x.feeUSD,cc.cur)}</td><td>${isFinite(x.shipUnit)?money(x.shipUnit):"rate?"}</td><td>${isFinite(x.landedUnit)?money(x.landedUnit):"—"}</td><td class="${cls(x.profit)}">${M(x.profit,cc.cur)}</td><td class="${cls(x.profit)}">${money(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
 
   // stock planner
   const units = Math.max(0, +S.stock||0);
