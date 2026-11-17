@@ -222,7 +222,7 @@
       </div>
       <div class="card">
         <h4>From leads to cash</h4>
-        <div class="seg" id="funnelSeg"><button data-m="100" class="on">Per 100 leads</button><button data-m="leads" id="leadsSeg">For your leads</button></div>
+        <div class="seg" id="funnelSeg"><button data-m="leads" id="leadsSeg" class="on">For your leads</button><button data-m="100">Per 100 leads</button></div>
         <div class="funnel" id="funnel"></div>
         <div class="tbl"><table id="pnl"></table></div>
       </div>
@@ -304,7 +304,7 @@ const DEFAULTS = {
   cc:0, codPct:0, lossPct:5, rCFA:600, rGNF:8700, stock:300, overrides:{}, v:3
 };
 const STORE = "codAfricaCalc";
-let S = load(), view = "overview", funnelMode = "100";
+let S = load(), view = "overview", funnelMode = "leads";
 
 function load(){
   try{
@@ -406,7 +406,7 @@ const TIPS = {
 };
 const KPI_TIPS = {
   profit:"What you keep on each delivered order after every cost: product, shipping, fee, ads, packaging and returns.",
-  per100:"Total profit for every 100 orders you receive.",
+  total:"Total profit from the number of leads you entered in Price & ads, after all costs including ad spend (leads × CPL).",
   becpl:"The highest cost per lead you can pay before you start losing money.",
   rec:"The price that gives you your target profit per delivered order (rounded up to $0.50).",
 };
@@ -494,18 +494,19 @@ function render(){
   // top badge
   $("badge").innerHTML = isFinite(m.profit) ? `Profit / order: <b>${money(m.profit)}</b>` : "Missing shipping rate";
 
+  const nLeads = Math.max(0, +S.leads||0), nDel = nLeads*m.eff, totalProfit = m.profit*nDel, spend = nLeads*m.cpl;
   // verdict
   const v = $("verdict");
   if(!isFinite(m.profit)){ v.className="verdict warn"; v.textContent="⚠️ Enter the shipping rate per kg (Country rates) to see results."; }
   else if(m.profit < 0){ v.className="verdict bad"; v.innerHTML = m.beCPL>0 ? `❌ Losing ${L(-m.profit)} per delivered order. Sell at ${L(m.recPriceUSD)} or more, or get your CPL under ${money(m.beCPL)}.` : `❌ Losing ${L(-m.profit)} per delivered order. Even with free ads this price doesn't cover your costs: sell at ${L(m.recPriceUSD)} or more.`; }
   else if(m.profit < target){ v.className="verdict warn"; v.innerHTML=`⚠️ Small profit: ${L(m.profit)} per delivered order, under your ${money(target)} target. Try selling at ${L(m.recPriceUSD)}.`; }
   else { v.className="verdict good"; v.innerHTML=`✅ Good: ${L(m.profit)} profit per delivered order. You stay profitable while your CPL is under ${money(m.beCPL)}.`; }
+  if(isFinite(m.profit) && nLeads>0) v.innerHTML += `<br><span style="font-weight:500">With your ${Math.round(nLeads)} leads: ${nDel.toFixed(0)} delivered orders → ${totalProfit>=0?"net profit":"net loss"} ${L(Math.abs(totalProfit))}.</span>`;
 
   // 4 key numbers
-  const per100 = m.profit*100*m.eff;
   $("kpis").innerHTML = [
     ["profit","Profit / delivered order", `<span class="${cls(m.profit)}">${L(m.profit)}</span>`, `margin ${pct(m.margin)}`],
-    ["per100","Profit / 100 leads", `<span class="${cls(per100)}">${L(per100)}</span>`, `${(100*m.eff).toFixed(0)} delivered of 100`],
+    ["total",`Net profit · ${Math.round(nLeads)} leads`, `<span class="${cls(totalProfit)}">${L(totalProfit)}</span>`, `${nDel.toFixed(0)} delivered · ad spend ${money(spend,"USD",0)}`],
     ["becpl","Max CPL (break-even)", m.beCPL>0 ? money(m.beCPL) : '<span class="neg">none</span>', `yours: ${money(m.cpl)}`],
     ["rec","Recommended price", L(m.recPriceUSD), `for ${money(target)} profit / order`],
   ].map(([k,l,val,s])=>`<div class="kpi"><div class="l">${l}${tipHTML(KPI_TIPS[k])}</div><div class="v">${val}</div><div class="s">${s}</div></div>`).join("");
