@@ -6,261 +6,331 @@
 <title>COD Africa Calculator</title>
 <style>
   :root{
-    --bg:#f4f6f8; --card:#fff; --ink:#1b2430; --muted:#6b7684; --line:#e3e7ec;
-    --brand:#0f766e; --brand2:#14b8a6; --good:#15803d; --goodbg:#dcfce7;
-    --warn:#b45309; --warnbg:#fef3c7; --bad:#b91c1c; --badbg:#fee2e2;
-    --c1:#0f766e; --c2:#2563eb; --c3:#7c3aed; --c4:#db2777; --c5:#ea580c; --c6:#ca8a04; --c7:#64748b;
+    --bg:#f3f5f7; --card:#fff; --ink:#18212b; --muted:#6b7684; --line:#e4e8ec;
+    --brand:#0f766e; --brand-soft:#e6f4f2;
+    --good:#15803d; --goodbg:#dcfce7; --warn:#a16207; --warnbg:#fef3c7; --bad:#b91c1c; --badbg:#fee2e2;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
-  header{background:linear-gradient(135deg,#0b4f4a,#0f766e);color:#fff;padding:18px 20px}
-  header h1{margin:0;font-size:20px}
-  header p{margin:4px 0 0;opacity:.85;font-size:13px}
-  .wrap{max-width:1280px;margin:0 auto;padding:16px}
-  .grid{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
-  .grid>div{min-width:0}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
-  @media(max-width:480px){.row3{grid-template-columns:1fr}.kpi .v{font-size:19px}.wrap{padding:10px}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
-  .card h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--brand)}
+  html,body{height:100%}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;display:flex;flex-direction:column}
+
+  /* ---------- top bar ---------- */
+  .top{background:#0b4f4a;color:#fff;display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap}
+  .top h1{margin:0;font-size:17px;font-weight:700;white-space:nowrap}
+  .top select{background:#ffffff1a;color:#fff;border:1px solid #ffffff40;border-radius:8px;padding:7px 10px;font-size:14px;min-width:190px}
+  .top select option{color:#18212b}
+  .badge{margin-left:auto;background:#ffffff1a;border-radius:99px;padding:6px 12px;font-size:13px;white-space:nowrap}
+  .badge b{font-size:15px}
+
+  /* ---------- layout ---------- */
+  .app{flex:1;display:grid;grid-template-columns:360px 1fr;min-height:0}
+  .panel{overflow-y:auto;padding:14px;border-right:1px solid var(--line);background:#fafbfc}
+  .results{overflow-y:auto;padding:14px 18px 24px;min-width:0}
+
+  .group{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .group h3{margin:0 0 10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-  label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
   .f{margin-bottom:10px}
-  input,select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink)}
-  input:focus,select:focus{outline:2px solid var(--brand2);border-color:transparent}
+  .f:last-child{margin-bottom:0}
+  label{display:flex;align-items:center;font-size:12px;color:var(--muted);margin-bottom:4px}
+  input[type=number],input[type=text]{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff;color:var(--ink)}
+  input:focus{outline:2px solid #5eead4;border-color:transparent}
   .unit{position:relative}
-  .unit input{padding-right:48px}
+  .unit input{padding-right:42px}
   .unit span{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);pointer-events:none}
-  .chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin-bottom:10px}
-  .chk input{width:auto}
-  .hint{font-size:11.5px;color:var(--muted);margin-top:3px}
-  .pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;background:#e6f4f2;color:var(--brand);margin:2px 4px 2px 0}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-  @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .kpi .l{font-size:12px;color:var(--muted)}
-  .kpi .v{font-size:22px;font-weight:700;margin-top:2px}
-  .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
-  .verdict{border-radius:12px;padding:12px 16px;margin-bottom:16px;font-weight:600}
+  .sub{font-size:11.5px;color:var(--muted);margin-top:3px;min-height:14px}
+  .chk{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink);margin:2px 0 0}
+  .chk input{width:auto;margin:0}
+  details.group summary{cursor:pointer;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);font-weight:700;list-style:none}
+  details.group summary::-webkit-details-marker{display:none}
+  details.group summary::after{content:"▾";float:right}
+  details.group[open] summary{margin-bottom:10px}
+  .linkbtn{background:none;border:0;color:var(--brand);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
+  .warnbox{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:12.5px;margin-top:8px}
+
+  /* ---------- results ---------- */
+  .verdict{border-radius:12px;padding:12px 16px;margin-bottom:12px;font-weight:600;line-height:1.45}
   .verdict.good{background:var(--goodbg);color:var(--good)} .verdict.warn{background:var(--warnbg);color:var(--warn)} .verdict.bad{background:var(--badbg);color:var(--bad)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .kpi .l{font-size:12px;color:var(--muted);display:flex;align-items:center}
+  .kpi .v{font-size:22px;font-weight:700;margin-top:3px;line-height:1.15}
+  .kpi .s{font-size:12px;color:var(--muted);margin-top:2px}
+  .loc{font-size:.72em;color:var(--muted);font-weight:400;margin-left:4px;white-space:nowrap}
+  .kpi .loc{display:block;margin:2px 0 0;font-size:12px}
   .pos{color:var(--good)} .neg{color:var(--bad)}
+
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+  .tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 12px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .tabs button.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+  .view{display:none;animation:fade .18s ease}
+  .view.on{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:12px}
+  .card h4{margin:0 0 4px;font-size:14px;display:flex;align-items:center}
+  .card .desc{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .two > .card{margin-bottom:0}
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
   th:first-child,td:first-child{text-align:left}
-  th{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase}
+  tr:last-child td{border-bottom:0}
+  th{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
   tr.hl td{background:#f0fdfa;font-weight:600}
   .tbl{overflow-x:auto}
-  .bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0 10px}
+  .bar{display:flex;height:26px;border-radius:7px;overflow:hidden;margin:4px 0 8px;background:#f1f5f9}
   .bar div{height:100%}
-  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
-  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-  .funnel{display:flex;gap:8px;flex-wrap:wrap}
-  .funnel div{flex:1;min-width:110px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
-  .funnel b{display:block;font-size:20px}
-  .funnel span{font-size:12px;color:var(--muted)}
+  .legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px}
+  .dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:0}
+  .funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+  .funnel div{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 4px;text-align:center}
+  .funnel b{display:block;font-size:19px}
+  .funnel span{font-size:11.5px;color:var(--muted)}
+  .seg{display:inline-flex;background:#eef2f5;border-radius:8px;padding:3px;margin-bottom:10px}
+  .seg button{border:0;background:none;padding:5px 10px;border-radius:6px;font-size:12.5px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px #0001;font-weight:600}
   .cell-good{background:#dcfce7} .cell-warn{background:#fef9c3} .cell-bad{background:#fee2e2}
-  .btn{background:var(--brand);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer}
-  .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
-  .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
-  .tabs button{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px}
-  .tabs button.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .warnbox{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:8px 10px;font-size:12.5px;margin-bottom:10px}
-  details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:13px;margin-bottom:8px}
-  .loc{font-size:.78em;color:var(--muted);font-weight:400;margin-left:3px}
-  .kpi .v .loc{display:block;font-size:12px;margin:0}
-  .tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:10px;font-weight:700;margin-left:5px;cursor:help;vertical-align:1px;user-select:none;flex-shrink:0;text-transform:none;letter-spacing:0}
+  .note{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+
+  /* ---------- tooltips ---------- */
+  .tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:10px;font-weight:700;margin-left:5px;cursor:help;user-select:none;flex-shrink:0;text-transform:none;letter-spacing:0}
   .tip:hover,.tip.on{background:var(--brand);color:#fff}
-  #tipbox{position:fixed;z-index:1000;max-width:260px;background:#1e293b;color:#f8fafc;font-size:12.5px;line-height:1.45;font-weight:400;padding:8px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;text-transform:none;letter-spacing:0}
-  footer{color:var(--muted);font-size:12px;text-align:center;padding:10px 0 30px}
+  #tipbox{position:fixed;z-index:1000;max-width:260px;background:#1e293b;color:#f8fafc;font-size:12.5px;line-height:1.45;font-weight:400;padding:8px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none}
+
+  /* ---------- mobile ---------- */
+  .bottomnav{display:none}
+  @media(max-width:1100px){ .kpis{grid-template-columns:repeat(2,1fr)} .two{grid-template-columns:1fr} }
+  @media(max-width:860px){
+    .top{padding:9px 12px;gap:8px}
+    .top h1{font-size:15px}
+    .top select{min-width:0;flex:1}
+    .badge{margin-left:0}
+    .app{display:block;overflow-y:auto;padding-bottom:64px}
+    .panel,.results{overflow:visible;border:0;padding:12px}
+    .app[data-view="setup"] .results{display:none}
+    .app:not([data-view="setup"]) .panel{display:none}
+    .tabs{display:none}
+    .bottomnav{display:flex;position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+    .bottomnav button{flex:1;border:0;background:none;padding:8px 2px 9px;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px}
+    .bottomnav button span{font-size:17px;line-height:1}
+    .bottomnav button.on{color:var(--brand);font-weight:600}
+    .kpi .v{font-size:19px}
+    .funnel b{font-size:16px}
+    .top h1{display:none}
+    td .loc{display:block;margin:1px 0 0}
+    th,td{padding:7px 5px}
+    .card{padding:12px}
+  }
 </style>
 </head>
 <body>
 <div id="tipbox" role="tooltip"></div>
-<header>
+
+<div class="top">
   <h1>📦 COD Africa Calculator</h1>
-  <p>Pricing and profit analysis for cash-on-delivery: product + weight-based shipping from China + fulfilment fee + ads + confirmation/delivery rates.</p>
-</header>
+  <select id="country" aria-label="Country"></select>
+  <div class="badge" id="badge"></div>
+</div>
 
-<div class="wrap">
-<div class="grid">
-<!-- ============ INPUTS ============ -->
-<div>
-  <div class="card">
-    <h2>1. Country</h2>
-    <div class="f">
-      <select id="country"></select>
-    </div>
-    <div id="countryInfo"></div>
-    <div class="row">
-      <div class="f"><label>Fulfilment fee per order</label><div class="unit"><input id="fee" type="number" step="any"><span>USD</span></div><div class="hint" id="feeHint"></div></div>
-      <div class="f"><label>Shipping from China (per kg)</label><div class="unit"><input id="shipKg" type="number" step="any"><span>USD</span></div><div class="hint" id="shipHint"></div></div>
-    </div>
-    <div id="shipWarn"></div>
-    <div class="hint">Defaults come from your partner's price list (in CFA), shown here in USD. Edit them if your rates change: edits are saved for each country.</div>
-    <button class="btn ghost" id="resetCountry" style="margin-top:8px">Reset this country's rates</button>
-  </div>
-
-  <div class="card">
-    <h2>2. Product</h2>
-    <div class="f"><label>Product name</label><input id="pname" type="text" placeholder="e.g. Rosemary hair oil"></div>
-    <div class="row">
-      <div class="f"><label>Product cost (China, per unit)</label><div class="unit"><input id="cost" type="number" step="any"><span>USD</span></div></div>
-      <div class="f"><label>Weight per unit (with packaging)</label><div class="unit"><input id="weight" type="number" step="any"><span>g</span></div></div>
-    </div>
-    <div class="row">
-      <div class="f"><label>Units per order</label><input id="units" type="number" step="1" min="1"></div>
-      <div class="f"><label>Extra cost per shipped order</label><div class="unit"><input id="extra" type="number" step="any"><span>USD</span></div><div class="hint">packaging, gift, flyer…</div></div>
-    </div>
-    <label class="chk"><input id="battery" type="checkbox"> Contains battery or liquid</label>
-    <div id="batteryHint" class="hint" style="margin-top:-6px;margin-bottom:8px"></div>
-  </div>
-
-  <div class="card">
-    <h2>3. Price & marketing</h2>
-    <div class="row">
-      <div class="f"><label>Selling price (per order)</label><div class="unit"><input id="price" type="number" step="any"><span>USD</span></div><div class="hint" id="priceHint"></div></div>
-      <div class="f"><label>Cost per lead (CPL)</label><div class="unit"><input id="cpl" type="number" step="any"><span>USD</span></div><div class="hint">ad spend ÷ orders received</div></div>
-    </div>
-    <div class="row">
-      <div class="f"><label>Confirmation rate</label><div class="unit"><input id="cr" type="number" step="any"><span>%</span></div></div>
-      <div class="f"><label>Delivery rate (of confirmed)</label><div class="unit"><input id="dr" type="number" step="any"><span>%</span></div></div>
-    </div>
-    <div class="row">
-      <div class="f"><label>Target profit per delivered order</label><div class="unit"><input id="target" type="number" step="any"><span>USD</span></div></div>
-      <div class="f"><label>Test ad budget</label><div class="unit"><input id="budget" type="number" step="any"><span>USD</span></div></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <details>
-      <summary>Advanced settings</summary>
-      <label class="chk"><input id="feeOnReturns" type="checkbox"> Fulfilment fee also charged on returned orders</label>
-      <div class="f"><label>Share of the fee charged on a return</label><div class="unit"><input id="retPct" type="number" step="any"><span>%</span></div></div>
+<div class="app" id="app" data-view="overview">
+  <!-- ============ INPUTS ============ -->
+  <aside class="panel">
+    <div class="group">
+      <h3>Product</h3>
+      <div class="f"><label for="pname">Product name</label><input id="pname" type="text" placeholder="e.g. Rosemary hair oil"></div>
       <div class="row">
-        <div class="f"><label>Call centre cost per lead</label><div class="unit"><input id="cc" type="number" step="any"><span>USD</span></div></div>
-        <div class="f"><label>COD collection fee</label><div class="unit"><input id="codPct" type="number" step="any"><span>%</span></div><div class="hint">% of cash collected</div></div>
+        <div class="f"><label for="cost">Product cost</label><div class="unit"><input id="cost" type="number" step="any" min="0"><span>$</span></div></div>
+        <div class="f"><label for="weight">Weight per unit</label><div class="unit"><input id="weight" type="number" step="any" min="0"><span>g</span></div></div>
       </div>
-      <div class="f"><label>Returned units lost or damaged</label><div class="unit"><input id="lossPct" type="number" step="any"><span>%</span></div></div>
       <div class="row">
-        <div class="f"><label>1 USD = ? CFA</label><input id="rCFA" type="number" step="any"></div>
-        <div class="f"><label>1 USD = ? GNF</label><input id="rGNF" type="number" step="any"></div>
+        <div class="f"><label for="units">Units per order</label><input id="units" type="number" step="1" min="1"></div>
+        <div class="f"><label for="extra">Packaging per order</label><div class="unit"><input id="extra" type="number" step="any" min="0"><span>$</span></div></div>
       </div>
-      <div class="f"><label>Units to import (stock planner)</label><input id="stock" type="number" step="1"></div>
-      <button class="btn ghost" id="resetAll">Reset everything</button>
+      <label class="chk"><input id="battery" type="checkbox"> Contains battery or liquid</label>
+      <div class="sub" id="batteryHint"></div>
+    </div>
+
+    <div class="group">
+      <h3>Price & ads</h3>
+      <div class="row">
+        <div class="f"><label for="price">Selling price</label><div class="unit"><input id="price" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="priceHint"></div></div>
+        <div class="f"><label for="cpl">Cost per lead</label><div class="unit"><input id="cpl" type="number" step="any" min="0"><span>$</span></div><div class="sub"></div></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="cr">Confirmation</label><div class="unit"><input id="cr" type="number" step="any" min="1" max="100"><span>%</span></div></div>
+        <div class="f"><label for="dr">Delivery</label><div class="unit"><input id="dr" type="number" step="any" min="1" max="100"><span>%</span></div></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="target">Target profit / order</label><div class="unit"><input id="target" type="number" step="any" min="0"><span>$</span></div></div>
+        <div class="f"><label for="budget">Test ad budget</label><div class="unit"><input id="budget" type="number" step="any" min="0"><span>$</span></div></div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>Country rates</h3>
+      <div class="row">
+        <div class="f"><label for="fee">Fulfilment fee</label><div class="unit"><input id="fee" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="feeHint"></div></div>
+        <div class="f"><label for="shipKg">Shipping / kg</label><div class="unit"><input id="shipKg" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="shipHint"></div></div>
+      </div>
+      <div id="shipWarn"></div>
+      <button class="linkbtn" id="resetCountry">Reset to price-list rates</button>
+    </div>
+
+    <details class="group">
+      <summary>More settings</summary>
+      <div class="row">
+        <div class="f"><label for="cc">Call centre / lead</label><div class="unit"><input id="cc" type="number" step="any" min="0"><span>$</span></div></div>
+        <div class="f"><label for="codPct">Cash collection fee</label><div class="unit"><input id="codPct" type="number" step="any" min="0"><span>%</span></div></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="lossPct">Returns damaged</label><div class="unit"><input id="lossPct" type="number" step="any" min="0"><span>%</span></div></div>
+        <div class="f"><label for="stock">Units to import</label><input id="stock" type="number" step="1" min="0"></div>
+      </div>
+      <div class="row">
+        <div class="f"><label for="rCFA">1 $ = ? FCFA</label><input id="rCFA" type="number" step="any" min="1"></div>
+        <div class="f"><label for="rGNF">1 $ = ? GNF</label><input id="rGNF" type="number" step="any" min="1"></div>
+      </div>
+      <button class="linkbtn" id="resetAll">Reset everything</button>
     </details>
-  </div>
-</div>
+  </aside>
 
-<!-- ============ RESULTS ============ -->
-<div>
-  <div id="verdict" class="verdict"></div>
-  <div class="kpis" id="kpis"></div>
+  <!-- ============ RESULTS ============ -->
+  <section class="results">
+    <div id="verdict" class="verdict"></div>
+    <div class="kpis" id="kpis"></div>
 
-  <div class="card">
-    <h2>Cost per delivered order</h2>
-    <div class="bar" id="bar"></div>
-    <div class="legend" id="legend"></div>
-    <div class="tbl" style="margin-top:10px"><table id="breakdown"></table></div>
-  </div>
+    <nav class="tabs" id="tabs">
+      <button data-v="overview" class="on">Overview</button>
+      <button data-v="pricing">Pricing</button>
+      <button data-v="whatif">What-if</button>
+      <button data-v="countries">Countries</button>
+      <button data-v="stock">Stock & weight</button>
+    </nav>
 
-  <div class="card">
-    <h2>Pricing</h2>
-    <div class="tbl"><table id="pricing"></table></div>
-  </div>
-
-  <div class="card">
-    <h2>Funnel</h2>
-    <div class="tabs" id="funnelTabs">
-      <button data-m="100" class="on">Per 100 leads</button>
-      <button data-m="budget">For your test budget</button>
+    <div class="view on" id="v-overview">
+      <div class="card">
+        <h4>Where your money goes</h4>
+        <p class="desc">Cost of one delivered order, compared with its selling price.</p>
+        <div class="bar" id="bar"></div>
+        <div class="tbl"><table id="breakdown"></table></div>
+      </div>
+      <div class="card">
+        <h4>From leads to cash</h4>
+        <div class="seg" id="funnelSeg"><button data-m="100" class="on">Per 100 leads</button><button data-m="budget">For your test budget</button></div>
+        <div class="funnel" id="funnel"></div>
+        <div class="tbl"><table id="pnl"></table></div>
+      </div>
     </div>
-    <div class="funnel" id="funnel"></div>
-    <div class="tbl" style="margin-top:12px"><table id="pnl"></table></div>
-  </div>
 
-  <div class="card">
-    <h2>Weight & shipping</h2>
-    <div class="tbl"><table id="weightTbl"></table></div>
-    <div id="weightNote" class="hint" style="margin-top:8px"></div>
-  </div>
+    <div class="view" id="v-pricing">
+      <div class="card">
+        <h4>Profit at different prices</h4>
+        <p class="desc">Pick a price that leaves room for a higher CPL. The green row is your current price.</p>
+        <div class="tbl"><table id="pricing"></table></div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h2>What-if: profit per delivered order (USD)</h2>
-    <div class="hint" style="margin-bottom:8px">Rows: CPL. Columns: confirmation and delivery rates, both shifted by the same number of points.</div>
-    <div class="tbl"><table id="sens"></table></div>
-  </div>
+    <div class="view" id="v-whatif">
+      <div class="card">
+        <h4>Profit per delivered order if things change</h4>
+        <p class="desc">Rows: cost per lead. Columns: confirmation / delivery rates. Green = target reached · yellow = small profit · red = loss.</p>
+        <div class="tbl"><table id="sens"></table></div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h2>Compare all countries (same product, same price in USD)</h2>
-    <div class="hint" style="margin-bottom:8px">Your current price is converted into each country's currency. CPL and rates are the same everywhere.</div>
-    <div class="tbl"><table id="compare"></table></div>
-  </div>
+    <div class="view" id="v-countries">
+      <div class="card">
+        <h4>Same product in every country</h4>
+        <p class="desc">Same price in $, same CPL and rates. Sorted from most to least profitable.</p>
+        <div class="tbl"><table id="compare"></table></div>
+      </div>
+    </div>
 
-  <div class="card">
-    <h2>Stock planner</h2>
-    <div class="tbl"><table id="stockTbl"></table></div>
-  </div>
+    <div class="view" id="v-stock">
+      <div class="two">
+        <div class="card">
+          <h4>Stock planner</h4>
+          <p class="desc">Change "Units to import" in More settings.</p>
+          <div class="tbl"><table id="stockTbl"></table></div>
+        </div>
+        <div class="card">
+          <h4>Weight & shipping</h4>
+          <p class="desc">Shipping from China is charged per kg.</p>
+          <div class="tbl"><table id="weightTbl"></table></div>
+          <div class="note" id="weightNote"></div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
-</div>
-<footer>Rates and fees come from your fulfilment partner's price list and can change. Always check with the partner before importing stock.</footer>
-</div>
+
+<nav class="bottomnav" id="bottomnav">
+  <button data-v="setup"><span>✏️</span>Setup</button>
+  <button data-v="overview" class="on"><span>📊</span>Results</button>
+  <button data-v="pricing"><span>🏷️</span>Pricing</button>
+  <button data-v="whatif"><span>🔀</span>What-if</button>
+  <button data-v="countries"><span>🌍</span>Countries</button>
+  <button data-v="stock"><span>📦</span>Stock</button>
+</nav>
 
 <script>
-// ---------- DATA (from partner price list) ----------
-// cur: currency of fee/shipping/price. fee: fulfilment fee per order. ship: China shipping per kg. shipBat: battery/liquid rate.
+// ---------- DATA (partner price list) ----------
 const COUNTRIES = {
-  CG:{name:"Congo-Brazzaville", flag:"🇨🇬", cur:"XAF", fee:6000,  ship:13000},
-  CM:{name:"Cameroon",          flag:"🇨🇲", cur:"XAF", fee:6000,  ship:13000},
-  GA:{name:"Gabon",             flag:"🇬🇦", cur:"XAF", fee:6500,  ship:13000},
-  TD:{name:"Chad",              flag:"🇹🇩", cur:"XAF", fee:6500,  ship:13000},
-  CI:{name:"Côte d'Ivoire",     flag:"🇨🇮", cur:"XOF", fee:5000,  ship:11000, shipBat:13000},
-  TG:{name:"Togo",              flag:"🇹🇬", cur:"XOF", fee:5000,  ship:12000},
-  BJ:{name:"Benin",             flag:"🇧🇯", cur:"XOF", fee:5000,  ship:12000},
-  BF:{name:"Burkina Faso",      flag:"🇧🇫", cur:"XOF", fee:5000,  ship:12000},
-  ML:{name:"Mali",              flag:"🇲🇱", cur:"XOF", fee:5000,  ship:12000},
-  NE:{name:"Niger",             flag:"🇳🇪", cur:"XOF", fee:5000,  ship:12000},
-  SN:{name:"Senegal",           flag:"🇸🇳", cur:"XOF", fee:5000,  ship:12000},
-  GN:{name:"Guinea (Conakry)",  flag:"🇬🇳", cur:"GNF", fee:85000, ship:214200},
-  CD:{name:"DR Congo",          flag:"🇨🇩", cur:"USD", fee:12,    ship:21},
+  CG:{name:"Congo-Brazzaville", cur:"XAF", fee:6000,  ship:13000},
+  CM:{name:"Cameroon",          cur:"XAF", fee:6000,  ship:13000},
+  GA:{name:"Gabon",             cur:"XAF", fee:6500,  ship:13000},
+  TD:{name:"Chad",              cur:"XAF", fee:6500,  ship:13000},
+  CI:{name:"Côte d'Ivoire",     cur:"XOF", fee:5000,  ship:11000, shipBat:13000},
+  TG:{name:"Togo",              cur:"XOF", fee:5000,  ship:12000},
+  BJ:{name:"Benin",             cur:"XOF", fee:5000,  ship:12000},
+  BF:{name:"Burkina Faso",      cur:"XOF", fee:5000,  ship:12000},
+  ML:{name:"Mali",              cur:"XOF", fee:5000,  ship:12000},
+  NE:{name:"Niger",             cur:"XOF", fee:5000,  ship:12000},
+  SN:{name:"Senegal",           cur:"XOF", fee:5000,  ship:12000},
+  GN:{name:"Guinea (Conakry)",  cur:"GNF", fee:85000, ship:214200},
+  CD:{name:"DR Congo",          cur:"USD", fee:12,    ship:21},
 };
-const CUR_LABEL = {XAF:"FCFA", XOF:"FCFA", GNF:"GNF", USD:"USD"};
-const ROUND_STEP = {XAF:500, XOF:500, GNF:5000, USD:1};
+const CUR_LABEL = {XAF:"FCFA", XOF:"FCFA", GNF:"GNF", USD:"$"};
 
 const DEFAULTS = {
   country:"CG", pname:"", cost:1.5, weight:100, units:1, extra:0.2, battery:false,
   price:25, cpl:1.5, cr:55, dr:55, target:4, budget:300,
-  feeOnReturns:false, retPct:50, cc:0, codPct:0, lossPct:5,
-  rCFA:600, rGNF:8700, stock:300, overrides:{}, v:2
+  cc:0, codPct:0, lossPct:5, rCFA:600, rGNF:8700, stock:300, overrides:{}, v:3
 };
-
-let S = load();
-let funnelMode = "100";
+const STORE = "codAfricaCalc";
+let S = load(), view = "overview", funnelMode = "100";
 
 function load(){
-  try{ const raw = localStorage.getItem("codAfricaCalc"); if(raw){ const o = Object.assign({}, structuredClone(DEFAULTS), JSON.parse(raw));
-      if(o.v !== 2){ const cur = (COUNTRIES[o.country]||COUNTRIES.CG).cur; const r = cur==="USD"?1:cur==="GNF"?+o.rGNF:+o.rCFA; o.price = Math.round((+o.price/r)*100)/100; o.v = 2; delete o.prices; }
-      return o; } }catch(e){}
+  try{
+    const raw = localStorage.getItem(STORE);
+    if(raw){
+      const o = Object.assign({}, structuredClone(DEFAULTS), JSON.parse(raw));
+      if(!o.v || o.v < 2){ const cur=(COUNTRIES[o.country]||COUNTRIES.CG).cur; const r = cur==="USD"?1:cur==="GNF"?+o.rGNF:+o.rCFA; o.price = Math.round((+o.price/r)*100)/100; }
+      delete o.prices; delete o.feeOnReturns; delete o.retPct; o.v = 3;
+      return o;
+    }
+  }catch(e){}
   return structuredClone(DEFAULTS);
 }
-function save(){ try{ localStorage.setItem("codAfricaCalc", JSON.stringify(S)); }catch(e){} }
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(S)); }catch(e){} }
 
 // ---------- helpers ----------
 const $ = id => document.getElementById(id);
-const rateOf = cur => cur==="USD" ? 1 : cur==="GNF" ? +S.rGNF : +S.rCFA;   // local units per 1 USD
+const rateOf = cur => cur==="USD" ? 1 : cur==="GNF" ? (+S.rGNF||1) : (+S.rCFA||1);
 function countryRates(code){
   const c = COUNTRIES[code], o = S.overrides[code] || {};
   let ship = o.ship ?? c.ship;
   if (S.battery && c.shipBat && o.ship == null) ship = c.shipBat;
   return { fee: o.fee ?? c.fee, ship };
 }
-const n = v => (isFinite(v) ? v : 0);
 function money(v, cur="USD", dec){
   if(!isFinite(v)) return "—";
   if(cur==="USD"){ if(Math.abs(v)<0.005) v=0; const d = dec ?? (Math.abs(v) < 100 ? 2 : 0); return (v<0?"-":"")+"$"+Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d}); }
   const r = Math.round(v); return (r===0?0:r).toLocaleString("fr-FR")+" "+CUR_LABEL[cur];
 }
-// $ first, local currency in small brackets
+// $ first, local currency small next to it
 function M(usd, cur, dec){
   if(!isFinite(usd)) return "—";
   const main = money(usd, "USD", dec);
@@ -269,294 +339,276 @@ function M(usd, cur, dec){
 }
 const pct = v => isFinite(v) ? (v*100).toFixed(1)+"%" : "—";
 const cls = v => v>0 ? "pos" : v<0 ? "neg" : "";
-const roundUp = (v, step) => Math.ceil(v/step)*step;
 
-// ---------- core model ----------
-// Everything is computed in USD per DELIVERED order.
-function compute(code, priceUSDOverride, opts={}){
-  const c = COUNTRIES[code];
-  const r = rateOf(c.cur);
+// ---------- model: everything in $ per DELIVERED order ----------
+// The fulfilment fee is charged on delivered orders only.
+function compute(code, priceOverride, opts={}){
+  const c = COUNTRIES[code], r = rateOf(c.cur);
   const {fee, ship} = countryRates(code);
   const cpl = opts.cpl ?? +S.cpl;
   const cr = Math.min(Math.max((opts.cr ?? +S.cr)/100, 0.001), 1);
   const dr = Math.min(Math.max((opts.dr ?? +S.dr)/100, 0.001), 1);
   const units = Math.max(1, Math.round(+S.units||1));
-  const priceUSD = priceUSDOverride ?? +S.price;
-  const priceLocal = priceUSD * r;
-  const feeUSD = n(fee)/r;
+  const priceUSD = priceOverride ?? +S.price;
+  const feeUSD = (+fee||0)/r;
   const shipKgUSD = ship==null ? NaN : ship/r;
   const kg = (+S.weight||0)/1000;
   const shipUnit = kg*shipKgUSD;
   const landedUnit = (+S.cost||0) + shipUnit;
-  const retPerDel = (1-dr)/dr;           // returned orders per delivered order
-  const shippedPerDel = 1/dr;            // shipped (confirmed) orders per delivered order
-  const leadsPerDel = 1/(cr*dr);
-
+  const retPerDel = (1-dr)/dr, shippedPerDel = 1/dr, leadsPerDel = 1/(cr*dr);
   const parts = {
     product: (+S.cost||0)*units,
     shipping: shipUnit*units,
     fulfil: feeUSD,
-    returns: (S.feeOnReturns ? feeUSD*(+S.retPct/100)*retPerDel : 0) + landedUnit*units*(+S.lossPct/100)*retPerDel,
     ads: cpl*leadsPerDel,
+    returns: landedUnit*units*((+S.lossPct||0)/100)*retPerDel,
     callcentre: (+S.cc||0)*leadsPerDel,
     extra: (+S.extra||0)*shippedPerDel,
-    cod: priceUSD*(+S.codPct/100),
+    cod: priceUSD*((+S.codPct||0)/100),
   };
-  const costNoCod = parts.product+parts.shipping+parts.fulfil+parts.returns+parts.ads+parts.callcentre+parts.extra;
+  const costNoCod = parts.product+parts.shipping+parts.fulfil+parts.ads+parts.returns+parts.callcentre+parts.extra;
   const totalCost = costNoCod + parts.cod;
   const profit = priceUSD - totalCost;
-  const codK = 1 - (+S.codPct/100);
-  const beCPL = (priceUSD*codK - (costNoCod - parts.ads)) * cr*dr;
-  const bePriceUSD = costNoCod / codK;
-  const recPriceUSD = (costNoCod + (+S.target||0)) / codK;
-  return { code, c, r, fee, ship, cr, dr, units, cpl, priceLocal, priceUSD, feeUSD, shipKgUSD, kg, shipUnit, landedUnit,
+  const codK = 1 - ((+S.codPct||0)/100);
+  return { code, c, r, fee, ship, cr, dr, units, cpl, priceUSD, feeUSD, shipKgUSD, kg, shipUnit, landedUnit,
     parts, costNoCod, totalCost, profit, margin: profit/priceUSD, roas: priceUSD/parts.ads,
-    beCPL, bePriceUSD, recPriceUSD, eff: cr*dr, leadsPerDel, retPerDel };
+    beCPL: (priceUSD*codK - (costNoCod - parts.ads)) * cr*dr,
+    bePriceUSD: costNoCod/codK, recPriceUSD: Math.ceil(((costNoCod + (+S.target||0))/codK)*2)/2,
+    eff: cr*dr, leadsPerDel };
 }
 
+// ---------- tooltips text ----------
+const TIPS = {
+  pname:"Optional. A name to remember which product you're analysing.",
+  cost:"What you pay the Chinese supplier for one unit (Alibaba price), before shipping.",
+  weight:"Weight of one unit with its box and packaging, in grams. Shipping from China is charged per kg, so every gram counts.",
+  units:"Units in one order, e.g. 2 for a \"buy 2\" offer. Product cost and shipping are multiplied by this.",
+  extra:"Packaging, flyer or gift added to each shipped order. Paid on every shipped order, including returned ones.",
+  battery:"Tick if the product contains a battery or liquid. On the price list, only Côte d'Ivoire has a higher rate (13,000 FCFA/kg).",
+  price:"What the customer pays at delivery. The local amount is shown underneath.",
+  cpl:"Cost per lead: ad spend ÷ number of orders received (before confirmation). E.g. $150 for 100 orders = $1.50.",
+  cr:"Share of received orders confirmed by phone. Your partner's average: 50–55%.",
+  dr:"Share of confirmed orders that are delivered and paid. Your partner's average: 50–55%.",
+  target:"The profit you want on each delivered order. Used for the recommended price.",
+  budget:"What you plan to spend on ads for a test. Used in \"For your test budget\".",
+  fee:"Charged by the fulfilment partner on each delivered order (storage, packing, delivery, cash collection). Returned orders are not charged.",
+  shipKg:"Air freight from China to this country, per kg. Multiplied by your product's weight.",
+  cc:"Extra cost per lead if you pay a call centre separately. Leave 0 if confirmation is included.",
+  codPct:"Percentage of collected cash the partner keeps, if any. Leave 0 if not charged.",
+  lossPct:"Share of returned units that come back damaged and can't be sold again.",
+  stock:"How many units you plan to import. Used in the Stock tab.",
+  rCFA:"Exchange rate between dollars and CFA (XOF and XAF).",
+  rGNF:"Exchange rate between dollars and Guinean francs.",
+};
+const KPI_TIPS = {
+  profit:"What you keep on each delivered order after every cost: product, shipping, fee, ads, packaging and returns.",
+  per100:"Total profit for every 100 orders you receive.",
+  becpl:"The highest cost per lead you can pay before you start losing money.",
+  rec:"The price that gives you your target profit per delivered order (rounded up to $0.50).",
+};
+const tipHTML = t => `<span class="tip" tabindex="0" role="button" aria-label="Info" data-tip="${t.replace(/"/g,"&quot;")}">!</span>`;
+
 // ---------- UI wiring ----------
-const FIELDS = ["pname","cost","weight","units","extra","price","cpl","cr","dr","target","budget","retPct","cc","codPct","lossPct","rCFA","rGNF","stock"];
-const CHECKS = ["battery","feeOnReturns"];
+const FIELDS = ["pname","cost","weight","units","extra","price","cpl","cr","dr","target","budget","cc","codPct","lossPct","rCFA","rGNF","stock"];
 
 function initUI(){
   const sel = $("country");
   sel.innerHTML = Object.entries(COUNTRIES).map(([k,c])=>`<option value="${k}">${c.name}</option>`).join("");
   sel.value = S.country;
-  FIELDS.forEach(f=>{ $(f).value = S[f]; $(f).addEventListener("input", ()=>{ S[f] = $(f).type==="text" ? $(f).value : $(f).value===""? "" : +$(f).value; save(); if(f==="rCFA"||f==="rGNF") syncCountry(); render(); }); });
-  CHECKS.forEach(f=>{ $(f).checked = !!S[f]; $(f).addEventListener("change", ()=>{ S[f] = $(f).checked; save(); syncCountry(); render(); }); });
-  sel.addEventListener("change", ()=>{
-    S.country = sel.value;
-    save(); syncCountry(); render();
+  sel.addEventListener("change", ()=>{ S.country = sel.value; save(); syncCountry(); render(); });
+
+  FIELDS.forEach(f=>{
+    $(f).value = S[f];
+    $(f).addEventListener("input", ()=>{
+      S[f] = $(f).type==="text" ? $(f).value : ($(f).value==="" ? "" : +$(f).value);
+      save(); if(f==="rCFA"||f==="rGNF") syncCountry(); render();
+    });
   });
+  $("battery").checked = !!S.battery;
+  $("battery").addEventListener("change", ()=>{ S.battery = $("battery").checked; save(); syncCountry(); render(); });
+
   ["fee","shipKg"].forEach(id=>$(id).addEventListener("input", ()=>{
     const o = S.overrides[S.country] = S.overrides[S.country] || {};
     const key = id==="fee" ? "fee" : "ship";
-    if($(id).value===""){ delete o[key]; } else o[key] = +$(id).value * rateOf(COUNTRIES[S.country].cur);
+    if($(id).value==="") delete o[key]; else o[key] = +$(id).value * rateOf(COUNTRIES[S.country].cur);
     save(); render();
   }));
   $("resetCountry").onclick = ()=>{ delete S.overrides[S.country]; save(); syncCountry(); render(); };
-  $("resetAll").onclick = ()=>{ if(confirmReset()){ S = structuredClone(DEFAULTS); save(); location.reload(); } };
-  document.querySelectorAll("#funnelTabs button").forEach(b=>b.onclick=()=>{
-    document.querySelectorAll("#funnelTabs button").forEach(x=>x.classList.remove("on")); b.classList.add("on"); funnelMode=b.dataset.m; render();
+  $("resetAll").onclick = ()=>{ S = structuredClone(DEFAULTS); save(); location.reload(); };
+
+  document.querySelectorAll("#tabs button, #bottomnav button").forEach(b=>b.addEventListener("click", ()=>setView(b.dataset.v)));
+  document.querySelectorAll("#funnelSeg button").forEach(b=>b.onclick=()=>{
+    document.querySelectorAll("#funnelSeg button").forEach(x=>x.classList.toggle("on", x===b)); funnelMode=b.dataset.m; render();
+  });
+
+  // "!" tips on inputs
+  Object.entries(TIPS).forEach(([id,t])=>{
+    const el = $(id); if(!el) return;
+    const lab = el.closest(".chk") || el.closest(".f")?.querySelector("label");
+    if(lab) lab.insertAdjacentHTML("beforeend", tipHTML(t));
   });
   syncCountry();
 }
-function confirmReset(){ return true; } // no browser dialogs; reset is instant
+
+function setView(v){
+  const desktop = !matchMedia("(max-width:860px)").matches;
+  if(desktop && v==="setup") v = "overview";
+  view = v;
+  $("app").dataset.view = v;
+  document.querySelectorAll("#tabs button, #bottomnav button").forEach(b=>b.classList.toggle("on", b.dataset.v===v));
+  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("on", el.id==="v-"+v));
+  if(!desktop) window.scrollTo(0,0), $("app").scrollTop = 0;
+  else document.querySelector(".results").scrollTop = 0;
+}
 
 function syncCountry(){
-  const c = COUNTRIES[S.country], {fee, ship} = countryRates(S.country);
-  document.querySelectorAll(".cur").forEach(e=>e.textContent = CUR_LABEL[c.cur]);
-  const r = rateOf(c.cur), r2 = x => Math.round(x*100)/100;
+  const c = COUNTRIES[S.country], {fee, ship} = countryRates(S.country), r = rateOf(c.cur);
+  const r2 = x => Math.round(x*100)/100;
   $("fee").value = r2(fee/r); $("shipKg").value = ship==null ? "" : r2(ship/r);
-  $("countryInfo").innerHTML = `<span class="pill">Currency: ${CUR_LABEL[c.cur]}${c.cur!=="USD"?` · 1 USD = ${rateOf(c.cur).toLocaleString("fr-FR")}`:""}</span>`+
-    (c.shipBat?`<span class="pill">Battery/liquid: ${c.shipBat.toLocaleString("fr-FR")} /kg</span>`:"");
-  $("shipWarn").innerHTML = ship==null ? `<div class="warnbox">⚠️ The price list has no China shipping rate for ${c.name}. Ask your partner and enter it above.</div>` : "";
-  $("batteryHint").textContent = S.battery ? (c.shipBat ? "The battery/liquid rate is applied for this country." : "No battery/liquid surcharge for this country (per the price list): the normal rate applies.") : "";
+  $("shipWarn").innerHTML = ship==null ? `<div class="warnbox">No shipping rate for ${c.name}. Enter it above.</div>` : "";
+  $("batteryHint").textContent = S.battery ? (c.shipBat ? "Battery/liquid rate applied." : "No surcharge for this country: normal rate applies.") : "";
 }
 
 // ---------- render ----------
-const PART_META = [
-  ["product","Product cost","var(--c1)"],["shipping","Shipping from China (weight)","var(--c2)"],
-  ["fulfil","Fulfilment fee","var(--c3)"],["ads","Ads","var(--c4)"],
-  ["returns","Return costs","var(--c5)"],["callcentre","Call centre","var(--c6)"],
-  ["extra","Packaging/extra","var(--c7)"],["cod","COD fee","#94a3b8"]
+const PARTS = [
+  ["product","Product","#0f766e"],["shipping","Shipping from China","#2563eb"],
+  ["fulfil","Fulfilment fee","#7c3aed"],["ads","Ads","#db2777"],
+  ["extra","Packaging","#64748b"],["returns","Damaged returns","#ea580c"],
+  ["callcentre","Call centre","#ca8a04"],["cod","Cash collection fee","#94a3b8"]
 ];
 
 function render(){
-  const m = compute(S.country);
-  const cur = m.c.cur, L = v => M(v, cur);
-  // input hints
-  $("priceHint").textContent = cur==="USD" ? "" : `≈ ${money(m.priceLocal, cur)}`;
-  $("feeHint").textContent = cur==="USD" ? "" : `≈ ${money(m.fee, cur)}`;
-  $("shipHint").textContent = cur==="USD" || m.ship==null ? "" : `≈ ${money(m.ship, cur)} /kg`;
-  const recUSD = Math.ceil(m.recPriceUSD*2)/2;
+  const m = compute(S.country), cur = m.c.cur, L = v => M(v, cur), target = +S.target||0;
+
+  // hints under inputs
+  $("priceHint").textContent = cur==="USD" ? "" : "≈ "+money(m.priceUSD*m.r, cur);
+  $("feeHint").textContent = cur==="USD" ? "" : "≈ "+money(m.fee, cur);
+  $("shipHint").textContent = cur==="USD" || m.ship==null ? "" : "≈ "+money(m.ship, cur);
+
+  // top badge
+  $("badge").innerHTML = isFinite(m.profit) ? `Profit / order: <b>${money(m.profit)}</b>` : "Missing shipping rate";
+
   // verdict
   const v = $("verdict");
-  if(!isFinite(m.profit)){ v.className="verdict warn"; v.textContent="⚠️ Enter the shipping rate per kg to see the results."; }
-  else if(m.profit < 0){ v.className="verdict bad"; v.innerHTML=`❌ You lose ${L(-m.profit)} on every delivered order. Raise the price to at least ${L(m.bePriceUSD)} or lower your CPL below ${money(m.beCPL)}.`; }
-  else if(m.profit < (+S.target||0)){ v.className="verdict warn"; v.innerHTML=`⚠️ Profitable but thin: ${L(m.profit)} per delivered order, below your target of ${money(+S.target)}. Recommended price: ${L(recUSD)}.`; }
-  else { v.className="verdict good"; v.innerHTML=`✅ Profitable: ${L(m.profit)} per delivered order. Your CPL can go up to ${money(m.beCPL)} before you lose money.`; }
+  if(!isFinite(m.profit)){ v.className="verdict warn"; v.textContent="⚠️ Enter the shipping rate per kg (Country rates) to see results."; }
+  else if(m.profit < 0){ v.className="verdict bad"; v.innerHTML = m.beCPL>0 ? `❌ Losing ${L(-m.profit)} per delivered order. Sell at ${L(m.recPriceUSD)} or more, or get your CPL under ${money(m.beCPL)}.` : `❌ Losing ${L(-m.profit)} per delivered order. Even with free ads this price doesn't cover your costs: sell at ${L(m.recPriceUSD)} or more.`; }
+  else if(m.profit < target){ v.className="verdict warn"; v.innerHTML=`⚠️ Small profit: ${L(m.profit)} per delivered order, under your ${money(target)} target. Try selling at ${L(m.recPriceUSD)}.`; }
+  else { v.className="verdict good"; v.innerHTML=`✅ Good: ${L(m.profit)} profit per delivered order. You stay profitable while your CPL is under ${money(m.beCPL)}.`; }
 
-  // KPIs
-  const per100 = m.profit * 100 * m.eff;
+  // 4 key numbers
+  const per100 = m.profit*100*m.eff;
   $("kpis").innerHTML = [
-    ["Profit / delivered order", `<span class="${cls(m.profit)}">${L(m.profit)}</span>`, ""],
-    ["Net profit / 100 leads", `<span class="${cls(per100)}">${L(per100)}</span>`, `${(100*m.eff).toFixed(1)} delivered orders`],
-    ["Margin on price", `<span class="${cls(m.margin)}">${pct(m.margin)}</span>`, `ROAS ${isFinite(m.roas)?m.roas.toFixed(2):"—"}`],
-    ["Break-even CPL", money(m.beCPL), `your CPL: ${money(+S.cpl)}`],
-    ["Ad cost per delivered order (CPA)", L(m.parts.ads), ""],
-    ["Effective delivery rate", pct(m.eff), `${m.leadsPerDel.toFixed(1)} leads per delivered order`],
-    ["Break-even price", L(m.bePriceUSD), ""],
-    ["Recommended price", L(recUSD), `for ${money(+S.target)} profit/order`],
-  ].map(([l,val,s])=>`<div class="kpi"><div class="l">${l}${KPI_TIPS[l]?tipHTML(KPI_TIPS[l]):""}</div><div class="v">${val}</div><div class="s">${s}</div></div>`).join("");
+    ["profit","Profit / delivered order", `<span class="${cls(m.profit)}">${L(m.profit)}</span>`, `margin ${pct(m.margin)}`],
+    ["per100","Profit / 100 leads", `<span class="${cls(per100)}">${L(per100)}</span>`, `${(100*m.eff).toFixed(0)} delivered of 100`],
+    ["becpl","Max CPL (break-even)", m.beCPL>0 ? money(m.beCPL) : '<span class="neg">none</span>', `yours: ${money(m.cpl)}`],
+    ["rec","Recommended price", L(m.recPriceUSD), `for ${money(target)} profit / order`],
+  ].map(([k,l,val,s])=>`<div class="kpi"><div class="l">${l}${tipHTML(KPI_TIPS[k])}</div><div class="v">${val}</div><div class="s">${s}</div></div>`).join("");
 
-  // breakdown bar
-  const total = m.totalCost;
-  $("bar").innerHTML = PART_META.map(([k,,col])=> m.parts[k]>0 && isFinite(total) ? `<div title="${k}" style="width:${(m.parts[k]/Math.max(total,m.priceUSD))*100}%;background:${col}"></div>` : "").join("") +
-    (m.profit>0 ? `<div style="width:${(m.profit/m.priceUSD)*100}%;background:#86efac" title="profit"></div>` : "");
-  $("legend").innerHTML = PART_META.filter(([k])=>m.parts[k]>0).map(([k,l,col])=>`<span><i style="background:${col}"></i>${l}</span>`).join("") + (m.profit>0?`<span><i style="background:#86efac"></i>Profit</span>`:"");
+  // ---- overview: breakdown
+  const scale = Math.max(m.totalCost, m.priceUSD);
+  $("bar").innerHTML = isFinite(m.totalCost) ? PARTS.filter(([k])=>m.parts[k]>0).map(([k,l,col])=>`<div title="${l}" style="width:${m.parts[k]/scale*100}%;background:${col}"></div>`).join("") +
+    (m.profit>0 ? `<div title="Profit" style="width:${m.profit/scale*100}%;background:#86efac"></div>` : "") : "";
+  const shown = PARTS.filter(([k])=>m.parts[k]>0.0049);
   $("breakdown").innerHTML = `<tr><th>Item</th><th>Amount</th><th>% of price</th></tr>` +
-    PART_META.filter(([k])=>m.parts[k]>0 || ["product","shipping","fulfil","ads"].includes(k)).map(([k,l])=>`<tr><td>${l}</td><td>${L(m.parts[k])}</td><td>${pct(m.parts[k]/m.priceUSD)}</td></tr>`).join("") +
-    `<tr class="hl"><td>Total cost</td><td>${L(total)}</td><td>${pct(total/m.priceUSD)}</td></tr>` +
+    shown.map(([k,l,col])=>`<tr><td><span class="dot" style="background:${col}"></span>${l}</td><td>${L(m.parts[k])}</td><td>${pct(m.parts[k]/m.priceUSD)}</td></tr>`).join("") +
+    `<tr><td><b>Total cost</b></td><td><b>${L(m.totalCost)}</b></td><td>${pct(m.totalCost/m.priceUSD)}</td></tr>` +
     `<tr><td>Selling price</td><td>${L(m.priceUSD)}</td><td>100%</td></tr>` +
-    `<tr class="hl"><td>Profit</td><td class="${cls(m.profit)}">${L(m.profit)}</td><td class="${cls(m.profit)}">${pct(m.margin)}</td></tr>`;
+    `<tr class="hl"><td><span class="dot" style="background:#86efac"></span>Profit</td><td class="${cls(m.profit)}">${L(m.profit)}</td><td class="${cls(m.profit)}">${pct(m.margin)}</td></tr>`;
 
-  // pricing table: candidate prices in USD
-  const base = Math.ceil(m.bePriceUSD*2)/2;
-  const cands = new Set([+S.price, base, recUSD]);
-  for(let i=1;i<=5;i++) cands.add(base + i*3);
-  const rows = [...cands].filter(x=>x>0 && isFinite(x)).sort((a,b)=>a-b).map(p=>({p, x: compute(S.country, p)}));
-  $("pricing").innerHTML = `<tr><th>Price</th><th>Profit / delivered</th><th>Margin</th><th>Profit / 100 leads</th><th>Break-even CPL</th></tr>` +
-    rows.map(({p,x})=>`<tr class="${p===+S.price?"hl":""}"><td>${L(p)}${p===+S.price?" · current":p===base?" · break-even":p===recUSD?" · recommended":""}</td><td class="${cls(x.profit)}">${L(x.profit)}</td><td>${pct(x.margin)}</td><td class="${cls(x.profit)}">${L(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
-
-  // funnel
+  // ---- overview: funnel + P&L
   const leads = funnelMode==="100" ? 100 : (+S.budget||0)/(+S.cpl||1);
   const conf = leads*m.cr, del = conf*m.dr, ret = conf-del;
-  $("funnel").innerHTML = [
-    [leads,"leads"],[conf,`confirmed (${pct(m.cr)})`],[del,`delivered (${pct(m.dr)})`],[ret,"returned / refused"]
-  ].map(([v,l])=>`<div><b>${v.toFixed(v<10?1:0)}</b><span>${l}</span></div>`).join("");
-  const rev = del*m.priceUSD, spend = leads*m.cpl;
+  const fmt = x => x.toFixed(x<10?1:0);
+  $("funnel").innerHTML = [[leads,"leads"],[conf,"confirmed"],[del,"delivered"],[ret,"returned"]]
+    .map(([x,l])=>`<div><b>${fmt(x)}</b><span>${l}</span></div>`).join("");
   const lines = [
-    ["Revenue collected", rev],
-    ["Ad spend", -spend],
-    ["Products + shipping (delivered units)", -del*(m.parts.product+m.parts.shipping)],
+    ["Cash collected", del*m.priceUSD],
+    ["Ads", -leads*m.cpl],
+    ["Products + shipping", -del*(m.parts.product+m.parts.shipping)],
     ["Fulfilment fees", -del*m.parts.fulfil],
-    ["Return costs", -del*m.parts.returns],
+    ["Packaging", -del*m.parts.extra],
+    ["Damaged returns", -del*m.parts.returns],
     ["Call centre", -del*m.parts.callcentre],
-    ["Packaging / extra", -del*m.parts.extra],
-    ["COD fee", -del*m.parts.cod],
-  ].filter(([l,v],i)=> i<4 || Math.abs(v)>0.005);
+    ["Cash collection fee", -del*m.parts.cod],
+  ].filter(([,x],i)=> i<4 || Math.abs(x)>0.005);
   const net = del*m.profit;
-  $("pnl").innerHTML = `<tr><th>P&L</th><th>Amount</th></tr>` +
-    lines.map(([l,v])=>`<tr><td>${l}</td><td class="${cls(v)}">${L(v)}</td></tr>`).join("") +
+  $("pnl").innerHTML = lines.map(([l,x])=>`<tr><td>${l}</td><td class="${cls(x)}">${L(x)}</td></tr>`).join("") +
     `<tr class="hl"><td>Net profit</td><td class="${cls(net)}">${L(net)}</td></tr>`;
 
-  // weight
-  const wTotal = m.kg*m.units;
-  $("weightTbl").innerHTML = `<tr><th>Item</th><th>Value</th></tr>
-    <tr><td>Weight per order</td><td>${(wTotal*1000).toFixed(0)} g</td></tr>
-    <tr><td>Shipping rate</td><td>${m.ship==null?"—":L(m.shipKgUSD)+" /kg"}</td></tr>
-    <tr><td>Shipping cost per unit</td><td>${L(m.shipUnit)}</td></tr>
-    <tr><td>Landed cost per unit (product + shipping)</td><td>${L(m.landedUnit)}</td></tr>
-    <tr><td>Shipping as % of landed cost</td><td>${pct(m.shipUnit/m.landedUnit)}</td></tr>
-    <tr><td>Shipping as % of selling price</td><td>${pct(m.parts.shipping/m.priceUSD)}</td></tr>`;
-  const gStep = [50,100,200,300,500,1000];
-  $("weightNote").innerHTML = (m.shipUnit/m.landedUnit > 0.5 ? "⚠️ Shipping costs more than the product itself, so weight is eating your margin. Look for a lighter version or lighter packaging.<br>" : "") +
-    "Shipping per unit at other weights: " + gStep.map(g=>`${g} g → ${L(g/1000*m.shipKgUSD)}`).join(" · ");
+  // ---- pricing
+  const base = Math.ceil(m.bePriceUSD*2)/2;
+  const cands = new Set([+S.price, base, m.recPriceUSD]);
+  for(let i=1;i<=5;i++) cands.add(base + i*3);
+  const rows = [...cands].filter(x=>x>0 && isFinite(x)).sort((a,b)=>a-b).map(p=>({p, x:compute(S.country, p)}));
+  const tag = p => p===+S.price ? " · current" : p===base ? " · break-even" : p===m.recPriceUSD ? " · recommended" : "";
+  $("pricing").innerHTML = `<tr><th>Price</th><th>Profit / order</th><th>Margin</th><th>Profit / 100 leads</th><th>Max CPL</th></tr>` +
+    rows.map(({p,x})=>`<tr class="${p===+S.price?"hl":""}"><td>${L(p)}<span class="loc">${tag(p)}</span></td><td class="${cls(x.profit)}">${L(x.profit)}</td><td>${pct(x.margin)}</td><td class="${cls(x.profit)}">${L(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
 
-  // sensitivity
-  const shifts = [-10,-5,0,5,10];
-  const mults = [0.5,0.75,1,1.25,1.5,2];
-  $("sens").innerHTML = `<tr><th>CPL</th>${shifts.map(s=>`<th>${Math.max(1,+S.cr+s)}% / ${Math.max(1,+S.dr+s)}%${s===0?" (now)":""}</th>`).join("")}</tr>` +
-    mults.map(mu=>{ const cpl = (+S.cpl)*mu; return `<tr class="${mu===1?"hl":""}"><td>${money(cpl)}</td>${shifts.map(s=>{ const x = compute(S.country, undefined, {cpl, cr:Math.max(1,+S.cr+s), dr:Math.max(1,+S.dr+s)}); const k = x.profit>= (+S.target||0) ? "cell-good" : x.profit>=0 ? "cell-warn" : "cell-bad"; return `<td class="${k}">${L(x.profit)}</td>`; }).join("")}</tr>`; }).join("");
+  // ---- what-if
+  const shifts = [-10,-5,0,5,10], mults = [0.5,0.75,1,1.25,1.5,2];
+  const crr = s => Math.min(100, Math.max(1, +S.cr+s)), drr = s => Math.min(100, Math.max(1, +S.dr+s));
+  $("sens").innerHTML = `<tr><th>CPL</th>${shifts.map(s=>`<th>${crr(s)}% / ${drr(s)}%${s===0?" · now":""}</th>`).join("")}</tr>` +
+    mults.map(mu=>{ const cpl = (+S.cpl)*mu; return `<tr class="${mu===1?"hl":""}"><td>${money(cpl)}${mu===1?'<span class="loc">now</span>':""}</td>${shifts.map(s=>{
+      const x = compute(S.country, undefined, {cpl, cr:crr(s), dr:drr(s)});
+      const k = x.profit>=target ? "cell-good" : x.profit>=0 ? "cell-warn" : "cell-bad";
+      return `<td class="${k}">${money(x.profit)}</td>`; }).join("")}</tr>`; }).join("");
 
-  // compare
+  // ---- countries
   const cmp = Object.keys(COUNTRIES).map(code=>({code, cc:COUNTRIES[code], x:compute(code, m.priceUSD)}))
-    .sort((a,b)=> (isFinite(b.x.profit)?b.x.profit:-1e9) - (isFinite(a.x.profit)?a.x.profit:-1e9));
-  $("compare").innerHTML = `<tr><th>Country</th><th>Price</th><th>Fee</th><th>Ship/unit</th><th>Landed/unit</th><th>Profit / delivered</th><th>Profit / 100 leads</th><th>Break-even CPL</th></tr>` +
-    cmp.map(({code,cc,x})=>`<tr class="${code===S.country?"hl":""}"><td>${cc.name}</td><td>${M(x.priceUSD,cc.cur)}</td><td>${M(x.feeUSD,cc.cur)}</td><td>${isFinite(x.shipUnit)?money(x.shipUnit):"rate?"}</td><td>${isFinite(x.landedUnit)?money(x.landedUnit):"—"}</td><td class="${cls(x.profit)}">${M(x.profit,cc.cur)}</td><td class="${cls(x.profit)}">${money(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
+    .sort((a,b)=>(isFinite(b.x.profit)?b.x.profit:-1e9)-(isFinite(a.x.profit)?a.x.profit:-1e9));
+  $("compare").innerHTML = `<tr><th>Country</th><th>Fee</th><th>Shipping / unit</th><th>Profit / order</th><th>Profit / 100 leads</th><th>Max CPL</th></tr>` +
+    cmp.map(({code,cc,x})=>`<tr class="${code===S.country?"hl":""}"><td>${cc.name}</td><td>${M(x.feeUSD,cc.cur)}</td><td>${isFinite(x.shipUnit)?money(x.shipUnit):"—"}</td><td class="${cls(x.profit)}">${M(x.profit,cc.cur)}</td><td class="${cls(x.profit)}">${money(x.profit*100*x.eff)}</td><td>${money(x.beCPL)}</td></tr>`).join("");
 
-  // stock planner
-  const units = Math.max(0, +S.stock||0);
-  const orders = units/m.units;
-  const leadsNeeded = orders/m.eff;
-  $("stockTbl").innerHTML = `<tr><th>Item</th><th>Amount</th></tr>
-    <tr><td>Units to import</td><td>${units} units · ${(units*m.kg).toFixed(2)} kg</td></tr>
-    <tr><td>Product cost</td><td>${M(units*(+S.cost||0),cur,0)}</td></tr>
+  // ---- stock
+  const units = Math.max(0, +S.stock||0), orders = units/m.units, leadsNeeded = orders/m.eff;
+  $("stockTbl").innerHTML = `
+    <tr><td>Units to import</td><td>${units} · ${(units*m.kg).toFixed(1)} kg</td></tr>
+    <tr><td>Products</td><td>${M(units*(+S.cost||0),cur,0)}</td></tr>
     <tr><td>Shipping from China</td><td>${M(units*m.shipUnit,cur,0)}</td></tr>
-    <tr class="hl"><td>Cash needed for stock</td><td>${M(units*m.landedUnit,cur,0)}</td></tr>
-    <tr><td>Delivered orders this stock covers</td><td>${orders.toFixed(0)} orders</td></tr>
-    <tr><td>Leads needed to sell it all</td><td>${leadsNeeded.toFixed(0)} leads → ad spend ≈ ${M(leadsNeeded*m.cpl,cur,0)}</td></tr>
-    <tr class="hl"><td>Expected net profit when sold out</td><td class="${cls(m.profit)}">${M(orders*m.profit,cur,0)}</td></tr>`;
+    <tr class="hl"><td>Cash needed</td><td>${M(units*m.landedUnit,cur,0)}</td></tr>
+    <tr><td>Delivered orders it covers</td><td>${orders.toFixed(0)}</td></tr>
+    <tr><td>Leads needed</td><td>${leadsNeeded.toFixed(0)}</td></tr>
+    <tr><td>Ad spend to sell it all</td><td>${M(leadsNeeded*m.cpl,cur,0)}</td></tr>
+    <tr class="hl"><td>Profit when sold out</td><td class="${cls(m.profit)}">${M(orders*m.profit,cur,0)}</td></tr>`;
+  $("weightTbl").innerHTML = `
+    <tr><td>Weight per order</td><td>${(m.kg*m.units*1000).toFixed(0)} g</td></tr>
+    <tr><td>Shipping rate</td><td>${m.ship==null?"—":L(m.shipKgUSD)+" /kg"}</td></tr>
+    <tr><td>Shipping per unit</td><td>${L(m.shipUnit)}</td></tr>
+    <tr><td>Landed cost per unit</td><td>${L(m.landedUnit)}</td></tr>
+    <tr><td>Shipping share of landed cost</td><td>${pct(m.shipUnit/m.landedUnit)}</td></tr>
+    <tr><td>Shipping share of price</td><td>${pct(m.parts.shipping/m.priceUSD)}</td></tr>`;
+  $("weightNote").innerHTML = (m.shipUnit > (+S.cost||0) ? "⚠️ Shipping costs more than the product itself. A lighter product or lighter packaging would help.<br>" : "") +
+    "Shipping per unit: " + [50,100,200,300,500,1000].map(g=>`${g} g → ${money(g/1000*m.shipKgUSD)}`).join(" · ");
 }
 
-
-// ---------- info tooltips ("!") ----------
-const TIPS = {
-  country:"Pick the country you sell in. The fulfilment fee, the China shipping rate and the local currency switch to that country.",
-  fee:"What the fulfilment partner charges for each delivered order (storage, packing, delivery, cash collection). From your partner's price list. Charged only on delivered orders.",
-  shipKg:"Air freight to bring your stock from China to this country, per kilogram. It is multiplied by your product's weight.",
-  pname:"Optional. A name to remember which product you're analysing.",
-  cost:"What you pay the Chinese supplier for one unit (Alibaba price), before shipping.",
-  weight:"Weight of one unit including its box and packaging. Shipping is charged per kg, so every gram counts.",
-  units:"How many units are in one order, e.g. 2 for a \"buy 2\" offer. Product cost and shipping are multiplied by this.",
-  extra:"Small costs on each shipped order: packaging, flyer, gift. Paid on every shipped order, including returned ones.",
-  battery:"Tick if the product contains a battery or liquid. On the price list only Côte d'Ivoire has a higher rate (13,000 FCFA/kg).",
-  price:"What the customer pays at delivery, in USD. The CFA amount is shown underneath.",
-  cpl:"Cost per lead: your ad spend divided by the number of orders received (before confirmation). E.g. $150 spent for 100 orders = $1.50.",
-  cr:"Share of received orders that the call centre confirms by phone. Your partner's average is 50–55%.",
-  dr:"Share of confirmed orders that are actually delivered and paid. Your partner's average is 50–55%.",
-  target:"The profit you want on each delivered order. Used to calculate the recommended price.",
-  budget:"How much you plan to spend on ads for a test. Used in the \"For your test budget\" funnel.",
-  feeOnReturns:"Turn on only if the partner also charges a fee on refused or returned orders. Your partner charges delivered orders only, so leave it off.",
-  retPct:"If a fee is charged on returns, the share of the normal fee that is charged.",
-  cc:"Extra cost per lead if you pay a call centre separately. Leave 0 if confirmation is included in the partner's service.",
-  codPct:"Percentage of the collected cash that the partner keeps, if any. Leave 0 if they don't charge it.",
-  lossPct:"Share of returned units that come back damaged or lost and can't be sold again.",
-  rCFA:"Exchange rate used to convert between dollars and CFA (XOF and XAF).",
-  rGNF:"Exchange rate used for Guinea (GNF).",
-  stock:"How many units you plan to import from China. Used in the stock planner.",
-};
-const SECTION_TIPS = {
-  "Cost per delivered order":"Everything one delivered order costs you, including your share of ads and returns spread over the orders that actually pay.",
-  "Pricing":"Profit at different selling prices. Break-even = 0 profit. Recommended = your target profit.",
-  "Funnel":"How leads turn into confirmed and delivered orders, and the resulting profit and loss.",
-  "Weight & shipping":"How much the product's weight costs you in shipping from China.",
-  "What-if":"Profit per delivered order if your CPL or your confirmation/delivery rates change. Green = target reached, yellow = small profit, red = loss.",
-  "Compare all countries":"The same product at the same USD price in every country, sorted from most to least profitable.",
-  "Stock planner":"Cash needed to import your stock, how many leads it takes to sell it, and the profit once it's sold.",
-};
-const KPI_TIPS = {
-  "Profit / delivered order":"What you keep on each delivered order after every cost: product, shipping, fee, ads, returns and extras.",
-  "Net profit / 100 leads":"Total profit for every 100 orders you receive.",
-  "Margin on price":"Profit as a percentage of the selling price. ROAS = revenue ÷ ad spend.",
-  "Break-even CPL":"The highest cost per lead you can pay before you start losing money.",
-  "Ad cost per delivered order (CPA)":"Ad spend needed for one delivered order = CPL ÷ confirmation rate ÷ delivery rate.",
-  "Effective delivery rate":"Share of leads that end up delivered = confirmation rate × delivery rate.",
-  "Break-even price":"The lowest selling price that covers all your costs (zero profit).",
-  "Recommended price":"The price that gives you your target profit per delivered order.",
-};
-const tipHTML = t => `<span class="tip" tabindex="0" role="button" aria-label="Info" data-tip="${t.replace(/"/g,"&quot;")}">!</span>`;
-function addTips(){
-  Object.entries(TIPS).forEach(([id,t])=>{
-    const el = $(id); if(!el) return;
-    const chk = el.closest(".chk");
-    const lab = chk || el.closest(".f")?.querySelector("label");
-    if(lab) lab.insertAdjacentHTML("beforeend", tipHTML(t));
-  });
-  document.querySelectorAll(".card h2").forEach(h=>{
-    const key = Object.keys(SECTION_TIPS).find(k=>h.textContent.trim().startsWith(k) || h.textContent.includes(k));
-    if(key) h.insertAdjacentHTML("beforeend", tipHTML(SECTION_TIPS[key]));
-  });
-}
+// ---------- tooltip behaviour: hover on desktop, tap on mobile ----------
 (function(){
   const box = $("tipbox"); let cur = null;
-  const canHover = window.matchMedia && matchMedia("(hover:hover)").matches;
+  const canHover = matchMedia("(hover:hover)").matches;
   function show(el){
     cur && cur.classList.remove("on"); cur = el; el.classList.add("on");
     box.textContent = el.dataset.tip; box.style.display = "block";
     const r = el.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
-    let left = Math.min(Math.max(8, r.left + r.width/2 - bw/2), window.innerWidth - bw - 8);
-    let top = r.bottom + 8; if(top + bh > window.innerHeight - 8) top = r.top - bh - 8;
+    const left = Math.min(Math.max(8, r.left + r.width/2 - bw/2), innerWidth - bw - 8);
+    let top = r.bottom + 8; if(top + bh > innerHeight - 8) top = r.top - bh - 8;
     box.style.left = left+"px"; box.style.top = Math.max(8, top)+"px";
   }
   function hide(){ box.style.display = "none"; cur && cur.classList.remove("on"); cur = null; }
   document.addEventListener("click", e=>{
     const t = e.target.closest(".tip");
-    if(t){ e.preventDefault(); e.stopPropagation(); (cur===t) ? hide() : show(t); return; }
+    if(t){ e.preventDefault(); e.stopPropagation(); cur===t ? hide() : show(t); return; }
     hide();
   }, true);
   if(canHover){
     document.addEventListener("mouseover", e=>{ const t = e.target.closest(".tip"); if(t) show(t); });
     document.addEventListener("mouseout", e=>{ if(e.target.closest(".tip")) hide(); });
   }
-  document.addEventListener("keydown", e=>{ if(e.key==="Escape") hide(); const t = e.target.closest && e.target.closest(".tip"); if(t && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); (cur===t)?hide():show(t); } });
-  window.addEventListener("scroll", hide, {passive:true});
-  window.addEventListener("resize", hide);
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") hide(); const t = e.target.closest && e.target.closest(".tip"); if(t && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); cur===t ? hide() : show(t); } });
+  document.addEventListener("scroll", hide, {passive:true, capture:true});
+  addEventListener("resize", hide);
 })();
 
 initUI();
-addTips();
 render();
 </script>
 </body>
