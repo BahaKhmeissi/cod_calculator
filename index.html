@@ -18,7 +18,9 @@
   header p{margin:4px 0 0;opacity:.85;font-size:13px}
   .wrap{max-width:1280px;margin:0 auto;padding:16px}
   .grid{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+  .grid>div{min-width:0}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  @media(max-width:480px){.row3{grid-template-columns:1fr}.kpi .v{font-size:19px}.wrap{padding:10px}}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:16px}
   .card h2{font-size:14px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.04em;color:var(--brand)}
   .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -67,10 +69,14 @@
   details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:13px;margin-bottom:8px}
   .loc{font-size:.78em;color:var(--muted);font-weight:400;margin-left:3px}
   .kpi .v .loc{display:block;font-size:12px;margin:0}
+  .tip{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:#e2e8f0;color:#334155;font-size:10px;font-weight:700;margin-left:5px;cursor:help;vertical-align:1px;user-select:none;flex-shrink:0;text-transform:none;letter-spacing:0}
+  .tip:hover,.tip.on{background:var(--brand);color:#fff}
+  #tipbox{position:fixed;z-index:1000;max-width:260px;background:#1e293b;color:#f8fafc;font-size:12.5px;line-height:1.45;font-weight:400;padding:8px 10px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.18);display:none;text-transform:none;letter-spacing:0}
   footer{color:var(--muted);font-size:12px;text-align:center;padding:10px 0 30px}
 </style>
 </head>
 <body>
+<div id="tipbox" role="tooltip"></div>
 <header>
   <h1>📦 COD Africa Calculator</h1>
   <p>Pricing and profit analysis for cash-on-delivery: product + weight-based shipping from China + fulfilment fee + ads + confirmation/delivery rates.</p>
@@ -382,7 +388,7 @@ function render(){
     ["Effective delivery rate", pct(m.eff), `${m.leadsPerDel.toFixed(1)} leads per delivered order`],
     ["Break-even price", L(m.bePriceUSD), ""],
     ["Recommended price", L(recUSD), `for ${money(+S.target)} profit/order`],
-  ].map(([l,val,s])=>`<div class="kpi"><div class="l">${l}</div><div class="v">${val}</div><div class="s">${s}</div></div>`).join("");
+  ].map(([l,val,s])=>`<div class="kpi"><div class="l">${l}${KPI_TIPS[l]?tipHTML(KPI_TIPS[l]):""}</div><div class="v">${val}</div><div class="s">${s}</div></div>`).join("");
 
   // breakdown bar
   const total = m.totalCost;
@@ -464,7 +470,93 @@ function render(){
     <tr class="hl"><td>Expected net profit when sold out</td><td class="${cls(m.profit)}">${M(orders*m.profit,cur,0)}</td></tr>`;
 }
 
+
+// ---------- info tooltips ("!") ----------
+const TIPS = {
+  country:"Pick the country you sell in. The fulfilment fee, the China shipping rate and the local currency switch to that country.",
+  fee:"What the fulfilment partner charges for each delivered order (storage, packing, delivery, cash collection). From your partner's price list. Charged only on delivered orders.",
+  shipKg:"Air freight to bring your stock from China to this country, per kilogram. It is multiplied by your product's weight.",
+  pname:"Optional. A name to remember which product you're analysing.",
+  cost:"What you pay the Chinese supplier for one unit (Alibaba price), before shipping.",
+  weight:"Weight of one unit including its box and packaging. Shipping is charged per kg, so every gram counts.",
+  units:"How many units are in one order, e.g. 2 for a \"buy 2\" offer. Product cost and shipping are multiplied by this.",
+  extra:"Small costs on each shipped order: packaging, flyer, gift. Paid on every shipped order, including returned ones.",
+  battery:"Tick if the product contains a battery or liquid. On the price list only Côte d'Ivoire has a higher rate (13,000 FCFA/kg).",
+  price:"What the customer pays at delivery, in USD. The CFA amount is shown underneath.",
+  cpl:"Cost per lead: your ad spend divided by the number of orders received (before confirmation). E.g. $150 spent for 100 orders = $1.50.",
+  cr:"Share of received orders that the call centre confirms by phone. Your partner's average is 50–55%.",
+  dr:"Share of confirmed orders that are actually delivered and paid. Your partner's average is 50–55%.",
+  target:"The profit you want on each delivered order. Used to calculate the recommended price.",
+  budget:"How much you plan to spend on ads for a test. Used in the \"For your test budget\" funnel.",
+  feeOnReturns:"Turn on only if the partner also charges a fee on refused or returned orders. Your partner charges delivered orders only, so leave it off.",
+  retPct:"If a fee is charged on returns, the share of the normal fee that is charged.",
+  cc:"Extra cost per lead if you pay a call centre separately. Leave 0 if confirmation is included in the partner's service.",
+  codPct:"Percentage of the collected cash that the partner keeps, if any. Leave 0 if they don't charge it.",
+  lossPct:"Share of returned units that come back damaged or lost and can't be sold again.",
+  rCFA:"Exchange rate used to convert between dollars and CFA (XOF and XAF).",
+  rGNF:"Exchange rate used for Guinea (GNF).",
+  stock:"How many units you plan to import from China. Used in the stock planner.",
+};
+const SECTION_TIPS = {
+  "Cost per delivered order":"Everything one delivered order costs you, including your share of ads and returns spread over the orders that actually pay.",
+  "Pricing":"Profit at different selling prices. Break-even = 0 profit. Recommended = your target profit.",
+  "Funnel":"How leads turn into confirmed and delivered orders, and the resulting profit and loss.",
+  "Weight & shipping":"How much the product's weight costs you in shipping from China.",
+  "What-if":"Profit per delivered order if your CPL or your confirmation/delivery rates change. Green = target reached, yellow = small profit, red = loss.",
+  "Compare all countries":"The same product at the same USD price in every country, sorted from most to least profitable.",
+  "Stock planner":"Cash needed to import your stock, how many leads it takes to sell it, and the profit once it's sold.",
+};
+const KPI_TIPS = {
+  "Profit / delivered order":"What you keep on each delivered order after every cost: product, shipping, fee, ads, returns and extras.",
+  "Net profit / 100 leads":"Total profit for every 100 orders you receive.",
+  "Margin on price":"Profit as a percentage of the selling price. ROAS = revenue ÷ ad spend.",
+  "Break-even CPL":"The highest cost per lead you can pay before you start losing money.",
+  "Ad cost per delivered order (CPA)":"Ad spend needed for one delivered order = CPL ÷ confirmation rate ÷ delivery rate.",
+  "Effective delivery rate":"Share of leads that end up delivered = confirmation rate × delivery rate.",
+  "Break-even price":"The lowest selling price that covers all your costs (zero profit).",
+  "Recommended price":"The price that gives you your target profit per delivered order.",
+};
+const tipHTML = t => `<span class="tip" tabindex="0" role="button" aria-label="Info" data-tip="${t.replace(/"/g,"&quot;")}">!</span>`;
+function addTips(){
+  Object.entries(TIPS).forEach(([id,t])=>{
+    const el = $(id); if(!el) return;
+    const chk = el.closest(".chk");
+    const lab = chk || el.closest(".f")?.querySelector("label");
+    if(lab) lab.insertAdjacentHTML("beforeend", tipHTML(t));
+  });
+  document.querySelectorAll(".card h2").forEach(h=>{
+    const key = Object.keys(SECTION_TIPS).find(k=>h.textContent.trim().startsWith(k) || h.textContent.includes(k));
+    if(key) h.insertAdjacentHTML("beforeend", tipHTML(SECTION_TIPS[key]));
+  });
+}
+(function(){
+  const box = $("tipbox"); let cur = null;
+  const canHover = window.matchMedia && matchMedia("(hover:hover)").matches;
+  function show(el){
+    cur && cur.classList.remove("on"); cur = el; el.classList.add("on");
+    box.textContent = el.dataset.tip; box.style.display = "block";
+    const r = el.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
+    let left = Math.min(Math.max(8, r.left + r.width/2 - bw/2), window.innerWidth - bw - 8);
+    let top = r.bottom + 8; if(top + bh > window.innerHeight - 8) top = r.top - bh - 8;
+    box.style.left = left+"px"; box.style.top = Math.max(8, top)+"px";
+  }
+  function hide(){ box.style.display = "none"; cur && cur.classList.remove("on"); cur = null; }
+  document.addEventListener("click", e=>{
+    const t = e.target.closest(".tip");
+    if(t){ e.preventDefault(); e.stopPropagation(); (cur===t) ? hide() : show(t); return; }
+    hide();
+  }, true);
+  if(canHover){
+    document.addEventListener("mouseover", e=>{ const t = e.target.closest(".tip"); if(t) show(t); });
+    document.addEventListener("mouseout", e=>{ if(e.target.closest(".tip")) hide(); });
+  }
+  document.addEventListener("keydown", e=>{ if(e.key==="Escape") hide(); const t = e.target.closest && e.target.closest(".tip"); if(t && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); (cur===t)?hide():show(t); } });
+  window.addEventListener("scroll", hide, {passive:true});
+  window.addEventListener("resize", hide);
+})();
+
 initUI();
+addTips();
 render();
 </script>
 </body>
