@@ -178,6 +178,9 @@
         <div class="f"><label for="fee">Fulfilment fee</label><div class="unit"><input id="fee" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="feeHint"></div></div>
         <div class="f"><label for="shipKg">Shipping / kg</label><div class="unit"><input id="shipKg" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="shipHint"></div></div>
       </div>
+      <div class="row">
+        <div class="f"><label for="storage">Storage / month</label><div class="unit"><input id="storage" type="number" step="any" min="0"><span>$</span></div><div class="sub" id="storageHint">Spread over delivered orders of the month. 0 = none.</div></div>
+      </div>
       <div id="shipWarn"></div>
       <button class="linkbtn" id="resetCountry">Reset to price-list rates</button>
     </div>
@@ -295,6 +298,7 @@ const COUNTRIES = {
   SN:{name:"Senegal",           cur:"XOF", fee:5000,  ship:12000},
   GN:{name:"Guinea (Conakry)",  cur:"GNF", fee:85000, ship:214200},
   CD:{name:"DR Congo",          cur:"USD", fee:12,    ship:21},
+  MR:{name:"Mauritania",        cur:"USD", fee:7,     ship:15, storage:50},
 };
 const CUR_LABEL = {XAF:"FCFA", XOF:"FCFA", GNF:"GNF", USD:"$"};
 
@@ -327,7 +331,7 @@ function countryRates(code){
   const c = COUNTRIES[code], o = S.overrides[code] || {};
   let ship = o.ship ?? c.ship;
   if (S.battery && c.shipBat && o.ship == null) ship = c.shipBat;
-  return { fee: o.fee ?? c.fee, ship };
+  return { fee: o.fee ?? c.fee, ship, storage: o.storage ?? c.storage ?? 0 };
 }
 function money(v, cur="USD", dec){
   if(!isFinite(v)) return "—";
@@ -348,7 +352,7 @@ const cls = v => v>0 ? "pos" : v<0 ? "neg" : "";
 // The fulfilment fee is charged on delivered orders only.
 function compute(code, priceOverride, opts={}){
   const c = COUNTRIES[code], r = rateOf(c.cur);
-  const {fee, ship} = countryRates(code);
+  const {fee, ship, storage} = countryRates(code);
   const cpl = opts.cpl ?? +S.cpl;
   const cr = Math.min(Math.max((opts.cr ?? +S.cr)/100, 0.001), 1);
   const dr = Math.min(Math.max((opts.dr ?? +S.dr)/100, 0.001), 1);
@@ -360,17 +364,21 @@ function compute(code, priceOverride, opts={}){
   const shipUnit = kg*shipKgUSD;
   const landedUnit = (+S.cost||0) + shipUnit;
   const retPerDel = (1-dr)/dr, shippedPerDel = 1/dr, leadsPerDel = 1/(cr*dr);
+  // Monthly storage is spread over the delivered orders of the month (leads x confirmation x delivery).
+  const storageMonthUSD = (+storage||0)/r, delPerMonth = (+(opts.leads ?? S.leads)||0)*cr*dr;
+  const storagePerDel = storageMonthUSD>0 && delPerMonth>0 ? storageMonthUSD/delPerMonth : 0;
   const parts = {
     product: (+S.cost||0)*units,
     shipping: shipUnit*units,
     fulfil: feeUSD,
+    storage: storagePerDel,
     ads: cpl*leadsPerDel,
     returns: landedUnit*units*((+S.lossPct||0)/100)*retPerDel,
     callcentre: (+S.cc||0)*leadsPerDel,
     extra: (+S.extra||0)*shippedPerDel,
     cod: priceUSD*((+S.codPct||0)/100),
   };
-  const costNoCod = parts.product+parts.shipping+parts.fulfil+parts.ads+parts.returns+parts.callcentre+parts.extra;
+  const costNoCod = parts.product+parts.shipping+parts.fulfil+parts.storage+parts.ads+parts.returns+parts.callcentre+parts.extra;
   const totalCost = costNoCod + parts.cod;
   const profit = priceUSD - totalCost;
   const codK = 1 - ((+S.codPct||0)/100);
@@ -396,6 +404,7 @@ const TIPS = {
   target:"The profit you want on each delivered order. Used for the recommended price.",
   leads:"How many orders (leads) you received or expect from your ads, before confirmation. Used in \"For your leads\" on the Results screen. Ad spend = leads × CPL.",
   fee:"Charged by the fulfilment partner on each delivered order (storage, packing, delivery, cash collection). Returned orders are not charged.",
+  storage:"Fixed monthly storage cost for this country. It is divided by the delivered orders of the month (leads x confirmation x delivery rate), so it falls as your volume grows.",
   shipKg:"Air freight from China to this country, per kg. Multiplied by your product's weight.",
   cc:"Extra cost per lead if you pay a call centre separately. Leave 0 if confirmation is included.",
   codPct:"Percentage of collected cash the partner keeps, if any. Leave 0 if not charged.",
@@ -431,9 +440,9 @@ function initUI(){
   $("battery").checked = !!S.battery;
   $("battery").addEventListener("change", ()=>{ S.battery = $("battery").checked; save(); syncCountry(); render(); });
 
-  ["fee","shipKg"].forEach(id=>$(id).addEventListener("input", ()=>{
+  ["fee","shipKg","storage"].forEach(id=>$(id).addEventListener("input", ()=>{
     const o = S.overrides[S.country] = S.overrides[S.country] || {};
-    const key = id==="fee" ? "fee" : "ship";
+    const key = id==="fee" ? "fee" : id==="storage" ? "storage" : "ship";
     if($(id).value==="") delete o[key]; else o[key] = +$(id).value * rateOf(COUNTRIES[S.country].cur);
     save(); render();
   }));
@@ -466,9 +475,9 @@ function setView(v){
 }
 
 function syncCountry(){
-  const c = COUNTRIES[S.country], {fee, ship} = countryRates(S.country), r = rateOf(c.cur);
+  const c = COUNTRIES[S.country], {fee, ship, storage} = countryRates(S.country), r = rateOf(c.cur);
   const r2 = x => Math.round(x*100)/100;
-  $("fee").value = r2(fee/r); $("shipKg").value = ship==null ? "" : r2(ship/r);
+  $("fee").value = r2(fee/r); $("storage").value = r2((+storage||0)/r); $("shipKg").value = ship==null ? "" : r2(ship/r);
   $("shipWarn").innerHTML = ship==null ? `<div class="warnbox">No shipping rate for ${c.name}. Enter it above.</div>` : "";
   $("batteryHint").textContent = S.battery ? (c.shipBat ? "Battery/liquid rate applied." : "No surcharge for this country: normal rate applies.") : "";
 }
@@ -476,7 +485,7 @@ function syncCountry(){
 // ---------- render ----------
 const PARTS = [
   ["product","Product","#0f766e"],["shipping","Shipping from China","#2563eb"],
-  ["fulfil","Fulfilment fee","#7c3aed"],["ads","Ads","#db2777"],
+  ["fulfil","Fulfilment fee","#7c3aed"],["storage","Storage (monthly)","#0891b2"],["ads","Ads","#db2777"],
   ["extra","Packaging","#64748b"],["returns","Damaged returns","#ea580c"],
   ["callcentre","Call centre","#ca8a04"],["cod","Cash collection fee","#94a3b8"]
 ];
@@ -533,6 +542,7 @@ function render(){
     ["Ads", -leads*m.cpl],
     ["Products + shipping", -del*(m.parts.product+m.parts.shipping)],
     ["Fulfilment fees", -del*m.parts.fulfil],
+    ["Storage", -del*m.parts.storage],
     ["Packaging", -del*m.parts.extra],
     ["Damaged returns", -del*m.parts.returns],
     ["Call centre", -del*m.parts.callcentre],
